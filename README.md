@@ -3,7 +3,11 @@
 This is a code editor, where the edited code is executed live in a web worker. 
 It is intended for teaching, and quickly making small HTML5/App prototypes.
 
-# App state / initialisation
+# Literate source code
+
+Below is the actual source code for the application.
+
+## App state / initialisation
 
     var state = self.appeditState;
     if(!state) {
@@ -11,14 +15,14 @@ It is intended for teaching, and quickly making small HTML5/App prototypes.
       createCodeMirror();
     }
 
-# Util
+## Util
 
-## Dependencies
+### Dependencies
 
     var URL = self.URL || self.webkitURL;
     var Worker = self.Worker;
 
-## Convert jsonml to dom
+### Convert jsonml to dom
 
     function jsonml2dom(o) { 
       if(typeof o === 'string') {
@@ -44,7 +48,7 @@ It is intended for teaching, and quickly making small HTML5/App prototypes.
       }
     }
 
-# UI - Code editor
+## UI - Code editor
 
     function createCodeMirror() {
       state.codemirror = self.CodeMirror(
@@ -68,9 +72,9 @@ It is intended for teaching, and quickly making small HTML5/App prototypes.
       state.codemirror.on('change', function(o) { state.onsourcechange(o); });
     }
 
-# WebWorker
+## WebWorker
 
-## Initial worker code
+### Initial worker code
 
     /* jshint ignore:start */
     var workerCodeUrl = URL.createObjectURL(new Blob([`
@@ -91,7 +95,7 @@ It is intended for teaching, and quickly making small HTML5/App prototypes.
     `]));
     /* jshint ignore:end */
 
-## Initialisation functions.
+### Initialisation functions.
 
     function newWorker() {
       if(state.worker) {
@@ -106,7 +110,7 @@ It is intended for teaching, and quickly making small HTML5/App prototypes.
       URL.revokeObjectURL(url);
     }
 
-# onchange
+## onchange
 
     state.onsourcechange = function(o) {
       var content = o.getValue();
