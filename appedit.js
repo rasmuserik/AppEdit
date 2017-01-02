@@ -114,7 +114,6 @@ self.onmessage = function(msg) {
   // TODO handle binary data
   handler(o);
 }
-setHandler('eval', o => eval(o.code));
 setHandler('eventError', o => console.log('Unhandled event: ', o));
 
 // ### Modules TODO: should be extracted as separate npm modules
@@ -159,12 +158,44 @@ reactiveDB.reaction("html", function(db) {
 
 // ### handle loading of external modules
 
+function RequireError(module) {
+  this.module = module;
+}
+var modules = {};
 self.require = function require(module) {
+  console.log('require', module);
+  if(modules[module]) {
+    return modules[module];
+  }
   if(module === 'reactive-db') {
     return reactiveDB;
   }
-  throw 'TODO: implement require in webworker';
+  throw new RequireError(module);
 }
+
+// ### Eval
+
+function execute(src) {
+  var module = {exports: {}};
+  try {
+    (new Function("module", "exports", src))(module, module.exports);
+  } catch(e) {
+    if(e instanceof RequireError) {
+      return fetch('https://unpkg.com/' + e.module)
+        .then(o => o.text())
+        .then(src => execute(src))
+        .then(module => {
+          modules[e.module] = module.exports;
+          return execute(src);
+        });
+    } else {
+      // TODO handle error and emit relevant event
+      throw e
+    }
+  }
+  return module;
+}
+setHandler('eval', o =>  execute(o.code, {exports: {}}));
 
 // ### End of webworker code
 
@@ -233,6 +264,7 @@ setInterval(function pinger() {
   silentTime = Date.now() - state.lastPing;
   if(silentTime > 2000) {
     console.log('worker not answering, restarting');
+    state.lastPing = Date.now();
     newWorker();
   }
   workerExec('self.postMessage({type: "ping"})');
@@ -250,6 +282,5 @@ state.onsourcechange = function(o) {
   workerExec(content);
 };
 
-// ## misc experiments
 
-
+// # Experiments
