@@ -1,4 +1,6 @@
-// # AppEdit
+// # AppEdit JS▶
+//
+// You can try it live at https://appedit.solsort.com/.
 //
 // This is a code editor, where the edited code is executed live in a web worker. 
 // It is intended for teaching, and quickly making small HTML5/App prototypes.
@@ -162,12 +164,12 @@ function RequireError(module) {
   this.module = module;
 }
 var modules = {};
-self.require = function require(module) {
+self.unpkg = self.require = function unpkg(module) {
   console.log('require', module);
   if(modules[module]) {
     return modules[module];
   }
-  if(module === 'reactive-db') {
+  if(module === 'reactive-db') { // TODO: make reactive-db npm module, and remove this.
     return reactiveDB;
   }
   throw new RequireError(module);
