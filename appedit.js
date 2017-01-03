@@ -17,7 +17,7 @@
 var state = self.appeditState;
 if(!state) {
   state = self.appeditState = {};
-  createCodeMirror();
+  setTimeout(createCodeMirror, 0);
 }
 
 // ## Util
@@ -62,20 +62,92 @@ function jsonml2dom(o) {
   }
 }
   
-// ## UI - Code editor
+// ## UI
+
+var menuHeight = '30px';
+var menuBackground = '#345';
+function makeMenuItem(str) {
+
+}
+var rootElem = jsonml2dom(
+    ['div', {id: 'appedit', style:{
+    }},
+      ['div', { id: 'topbar', style: {
+          display: 'inline-block',
+          position: 'absolute',
+          top: 0, left: 0, right: 0,
+          height: menuHeight,
+          textAlign: 'center',
+          font: '18px sans-serif',
+          lineHeight: '20px',
+          background: menuBackground,
+          color: '#fff'
+        }},
+        'AppEdit',
+        /*['div', {style: {
+          display: 'inline-block',
+          height: menuHeight,
+          fontSize: '13px',
+          lineHeight: '15px',
+          fontWeight: 'bold',
+          verticalAlign: 'top'
+        }},
+        'AppEdit.', ['br'], 'solsort.com'],*/
+        ' \xa0 '
+      ].concat(
+        ['Info', 'Code', 'App', 'Share']
+        .map(s => 
+          ["a", {href: '?'+s, style: {
+            display: 'inline-block',
+            textDecoration: 'none',
+            background: location.search.startsWith('?'+s)
+              ? '#123'
+              : menuBackground,
+            padding: '5px',
+            color: 'white',
+            fontSize: '14px',
+            height: menuHeight,
+          }}, s]
+        )
+      ),
+      ['div', {id: 'main', style: {
+        display: 'inline-block',
+        position: 'absolute',
+        top: menuHeight, left: 0, right: 0 , bottom: 0
+      }}, 
+        ['div', {id: 'appedit-code', style: {
+          display: 'inline-block',
+          position: 'absolute',
+          overflow: 'auto',
+          background: 'blue',
+          top: 0, left: 0, bottom: 0,
+          width: '50%'
+        }}], 
+        ['div', {id: 'appedit-app', style: {
+          display: 'inline-block',
+          position: 'absolute',
+          overflow: 'auto',
+          background: 'red',
+          top: 0, right: 0, bottom: 0,
+          width: '50%'
+        }}, 'app']]]);
+
+document.body.appendChild(rootElem);
+var codemirrorStyle = {
+  position: 'absolute',
+  top: 0, left: 0,
+  width: '100%', height: '100%'
+};
+
+// ## Code editor
   
+
 function createCodeMirror() {
   state.codemirror = self.CodeMirror(
       function(cmElement) {
         cmElement.id = "codemirror";
-        Object.assign(cmElement.style,
-            {position: "absolute",
-            top: 0,
-            left: 0,
-            width: "50%",
-            outline: "1px solid black",
-            height: "100%" });
-        document.body.appendChild(cmElement);
+        Object.assign(cmElement.style, codemirrorStyle);
+        document.getElementById('appedit-code').appendChild(cmElement);
       },
       {
     mode: 'javascript',
@@ -241,15 +313,9 @@ function handleWorkerMessage(msg) {
         baseElem = jsonml2dom(
             ["div", {
             id: "workerHTML",
-            style: {
-              position: "absolute",
-              top: 0,
-              right: 0,
-              width: "50%",
-              overflow: "auto"
-            }
+            style: { }
             }]);
-        document.body.appendChild(baseElem);
+        document.getElementById('appedit-app').appendChild(baseElem);
       }
       if(baseElem.children[0]) {
         baseElem.children[0].remove();
