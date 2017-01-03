@@ -14,6 +14,9 @@
 
 // ## App state / initialisation
   
+if(location.search === '') {
+  location.search = '?Code';
+}
 var state = self.appeditState;
 if(!state) {
   state = self.appeditState = {};
@@ -103,14 +106,13 @@ var rootElem = jsonml2dom(
             background: location.search.startsWith('?'+s)
               ? '#123'
               : menuBackground,
-            padding: '5px',
+            padding: '5px 5px 4px 5px',
             color: 'white',
             fontSize: '14px',
-            height: menuHeight,
           }}, s]
         )
       ),
-      ['div', {id: 'main', style: {
+      ['div', {id: 'appedit-main', style: {
         display: 'inline-block',
         position: 'absolute',
         top: menuHeight, left: 0, right: 0 , bottom: 0
@@ -119,18 +121,16 @@ var rootElem = jsonml2dom(
           display: 'inline-block',
           position: 'absolute',
           overflow: 'auto',
-          background: 'blue',
           top: 0, left: 0, bottom: 0,
-          width: '50%'
+          width: location.search.startsWith('?Code') ? '50%' : 0
         }}], 
-        ['div', {id: 'appedit-app', style: {
+        ['div', {id: 'appedit-content', style: {
           display: 'inline-block',
           position: 'absolute',
           overflow: 'auto',
-          background: 'red',
           top: 0, right: 0, bottom: 0,
-          width: '50%'
-        }}, 'app']]]);
+          width: location.search.startsWith('?Code') ? '50%' : '100%'
+        }}]]]);
 
 document.body.appendChild(rootElem);
 var codemirrorStyle = {
@@ -315,7 +315,7 @@ function handleWorkerMessage(msg) {
             id: "workerHTML",
             style: { }
             }]);
-        document.getElementById('appedit-app').appendChild(baseElem);
+        document.getElementById('appedit-content').appendChild(baseElem);
       }
       if(baseElem.children[0]) {
         baseElem.children[0].remove();
