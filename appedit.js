@@ -178,7 +178,7 @@ var codemirrorStyle = {
 
 if(!localStorage.getItem('appeditContent')) {
   localStorage.setItem('appeditContent',
-      "db = require('reactive-db');\n\n"  +
+      "db = require('./draf.js');\n\n"  +
       "function html(code) {\n" +
       "    db.set('html', code);\n" +
       "}\n\n" +
@@ -205,114 +205,6 @@ function createCodeMirror() {
   state.codemirror.on('change', function(o) { state.onsourcechange(o); });
 }
 
-// ## Code running within the webworker
-
-// The code below is passed as an url to the WebWorker constructor.
-
-var workerCodeUrl = URL.createObjectURL(new Blob([`
-
-// The code below runs within the worker thread, and bootstraps the environment.
-
-// ### Event handling
-
-var events = {};
-self.setHandler = function(e, f) { events[e] = f; }
-self.onmessage = function(msg) {
-  var o = msg.data;
-  var handler = events.eventError;
-  if(typeof o === "object" && events[o.type]) {
-    handler = events[o.type];
-  } 
-  // TODO handle binary data
-  handler(o);
-}
-setHandler('eventError', o => console.log('Unhandled event: ', o));
-
-// ### Modules TODO: should be extracted as separate npm modules
-
-// #### TODO Reactive database
-
-// Currently just an API-shim, will be implemented later
-
-var state = {};
-var reactions = {};
-
-var reactiveDB = {};
-reactiveDB.get = function(k, defaultValue) {
-        if(typeof k !== 'string') {
-          throw 'root key needs to be string';
-          // TODO handle array as recursive lookup (and numbers to access array) + typecheck
-        }
-        return (state[k] === undefined) ? defaultValue : state[k];
-      };
-reactiveDB.set = function(k, v) {
-        if(typeof k !== 'string') {
-          throw 'root key needs to be string';
-          // TODO handle array as recursive lookup (and numbers to access array) + typecheck
-        }
-        state[k] = v;
-        for(var key in reactions) {
-          if(reactions[key]) {
-            reactions[key](reactiveDB);
-          }
-        }
-      };
-reactiveDB.reaction = function(k, f) {
-        reactions[k] = f;
-        f(reactiveDB);
-      };
-
-// #### send HTML to main thread
-
-reactiveDB.reaction("html", function(db) {
-  postMessage({type: "html", data: db.get('html')});
-});
-
-// ### handle loading of external modules
-
-function RequireError(module) {
-  this.module = module;
-}
-var modules = {};
-self.unpkg = self.require = function unpkg(module) {
-  console.log('require', module);
-  if(modules[module]) {
-    return modules[module];
-  }
-  if(module === 'reactive-db') { // TODO: make reactive-db npm module, and remove this.
-    return reactiveDB;
-  }
-  throw new RequireError(module);
-}
-
-// ### Eval
-
-function execute(src) {
-  var module = {exports: {}};
-  try {
-    (new Function("module", "exports", src))(module, module.exports);
-  } catch(e) {
-    if(e instanceof RequireError) {
-      return fetch('https://unpkg.com/' + e.module)
-        .then(o => o.text())
-        .then(src => execute(src))
-        .then(module => {
-          modules[e.module] = module.exports;
-          return execute(src);
-        });
-    } else {
-      // TODO handle error and emit relevant event
-      throw e
-    }
-  }
-  return module;
-}
-setHandler('eval', o =>  execute(o.code, {exports: {}}));
-
-// ### End of webworker code
-
-`]));
-
 // ## Webworker setup
 
 // ### Initialisation functions.
@@ -321,15 +213,15 @@ function newWorker() {
   if(state.worker) {
     state.worker.terminate();
   }
-  state.worker = new Worker(workerCodeUrl);
+  state.worker = new Worker('./weare.js');
   state.worker.onmessage = handleWorkerMessage;
-  workerExec(
-      localStorage.getItem('appeditContent'));
+  // TODO this should actually be queued until the worker is ready (all dependencies are loaded instead of just waiting 500ms
+  setTimeout(o => workerExec(localStorage.getItem('appeditContent')), 500);
 }
 
 // Give codemirror time to initialise, before creating the worker.
 
-setTimeout(newWorker, 100);
+newWorker();
 
 
 // ### Handle messages from worker to main thread
