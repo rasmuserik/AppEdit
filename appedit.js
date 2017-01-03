@@ -15,7 +15,7 @@
 // ## App state / initialisation
   
 if(location.search === '') {
-  location.search = '?Code';
+  location.search = '?Edit';
 }
 var state = self.appeditState;
 if(!state) {
@@ -67,7 +67,7 @@ function jsonml2dom(o) {
   
 // ## UI
 
-var menuHeight = '30px';
+var menuHeight = '36px';
 var menuBackground = '#345';
 function makeMenuItem(str) {
 
@@ -80,13 +80,13 @@ var rootElem = jsonml2dom(
           position: 'absolute',
           top: 0, left: 0, right: 0,
           height: menuHeight,
-          textAlign: 'center',
-          font: '18px sans-serif',
+          textAlign: 'left',
+          font: '22px sans-serif',
           lineHeight: '20px',
           background: menuBackground,
           color: '#fff'
         }},
-        'AppEdit',
+        //'solsort ',
         /*['div', {style: {
           display: 'inline-block',
           height: menuHeight,
@@ -96,18 +96,18 @@ var rootElem = jsonml2dom(
           verticalAlign: 'top'
         }},
         'AppEdit.', ['br'], 'solsort.com'],*/
-        ' \xa0 '
+        '\xa0 '
       ].concat(
-        ['Info', 'Code', 'App', 'Share']
+        ['About', 'Read', 'Edit', 'App', 'Share']
         .map(s => 
           ["a", {href: '?'+s, style: {
             display: 'inline-block',
             textDecoration: 'none',
             background: location.search.startsWith('?'+s) ? 
               '#123' : menuBackground,
-            padding: '5px 5px 4px 5px',
+            padding: '8px 12px 8px 12px',
             color: 'white',
-            fontSize: '14px',
+            fontSize: '16px',
           }}, s]
         )
       ),
@@ -116,20 +116,40 @@ var rootElem = jsonml2dom(
         position: 'absolute',
         top: menuHeight, left: 0, right: 0 , bottom: 0
       }}, 
+      location.search.startsWith('?Read') ?
+        ['div', 'TODO: documentation / literate source code of current app']:
+      location.search.startsWith('?Edit') ?
+       ['div',
         ['div', {id: 'appedit-code', style: {
           display: 'inline-block',
           position: 'absolute',
           overflow: 'auto',
           top: 0, left: 0, bottom: 0,
-          width: location.search.startsWith('?Code') ? '50%' : 0
+          width: '50%'
         }}], 
         ['div', {id: 'appedit-content', style: {
           display: 'inline-block',
           position: 'absolute',
           overflow: 'auto',
           top: 0, right: 0, bottom: 0,
-          width: location.search.startsWith('?Code') ? '50%' : '100%'
-        }}]]]);
+          width: '50%'
+        }}]]:
+      location.search.startsWith('?App') ?
+        ['div', {id: 'appedit-content'}]:
+      location.search.startsWith('?Share') ?
+        ['div', 'TODO: sharing-links/buttons, and general settings']:
+      /* Default: Info */
+       ['div', 
+       'More info to come here...',
+       ['ul',
+       ['li', 'About: this is / made with a tool for live editing small apps'],
+       ['li', 'Introduction: Code App Share(+settings)'],
+       ['li', 'Pricing: currently only free trial, later on plans that allows you to publish the apps outside of this site'],
+       ['li', 'Key bindings during editing'],
+       ['li', 'Introduction to programming + links']
+       ]]
+        ]
+]);
 
 document.body.appendChild(rootElem);
 var codemirrorStyle = {
