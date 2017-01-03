@@ -1,5 +1,5 @@
 function RequireError(module) { this.module = module; }
-var baseUrl = './';
+var baseUrl;
 
 function moduleUrl(module) {
   if(module[0] === '.') {
@@ -28,7 +28,10 @@ self.require = function require(module) {
   throw new RequireError(module);
 };
 
-function execute(src) {
+function execute(src, base) {
+  if(base) {
+    baseUrl = base;
+  }
   var module = {exports: {}};
   try {
     (new Function('module', 'exports', src))(module, module.exports);//jshint ignore:line
@@ -51,4 +54,4 @@ function execute(src) {
   return module;
 }
 
-execute('require("./draf.js");');
+execute('require("./draf.js");', './');

@@ -2,7 +2,7 @@ var handlers = {};
 function dispatch(o) { handlers[o.type](o); }
 self.onmessage = msg => dispatch(msg.data);
 self.setHandler = (name, fn) => handlers[name] = fn;
-setHandler('eval', o => execute(o.code));
+setHandler('eval', o => execute(o.code, './'));
 
 
 var state = {};
