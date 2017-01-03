@@ -75,6 +75,9 @@ function makeMenuItem(str) {
 var rootElem = jsonml2dom(
     ['div', {id: 'appedit', style:{
     }},
+
+// ### Top menu
+
       ['div', { id: 'topbar', style: {
           display: 'inline-block',
           position: 'absolute',
@@ -86,17 +89,9 @@ var rootElem = jsonml2dom(
           background: menuBackground,
           color: '#fff'
         }},
-        //'solsort ',
-        /*['div', {style: {
-          display: 'inline-block',
-          height: menuHeight,
-          fontSize: '13px',
-          lineHeight: '15px',
-          fontWeight: 'bold',
-          verticalAlign: 'top'
-        }},
-        'AppEdit.', ['br'], 'solsort.com'],*/
-        '\xa0 '
+        ['img', {src: 'icon.png', width: 36, height: 36, style: {
+          float: 'left'
+        }}]
       ].concat(
         ['About', 'Read', 'Edit', 'App', 'Share']
         .map(s => 
@@ -105,19 +100,30 @@ var rootElem = jsonml2dom(
             textDecoration: 'none',
             background: location.search.startsWith('?'+s) ? 
               '#123' : menuBackground,
-            padding: '8px 12px 8px 12px',
+            padding: '8px 10px 8px 10px',
             color: 'white',
             fontSize: '16px',
           }}, s]
         )
       ),
+
+// ### main wrapper
+
       ['div', {id: 'appedit-main', style: {
         display: 'inline-block',
         position: 'absolute',
         top: menuHeight, left: 0, right: 0 , bottom: 0
       }}, 
+
+      // ### `Read` the literate code
+      
       location.search.startsWith('?Read') ?
-        ['div', 'TODO: documentation / literate source code of current app']:
+        ['div', 
+         ['p', 'This is the documentation and source code for the current app. Click on "Edit" or "App" above to run it.'],
+        ['div', 'TODO: documentation / literate source code of current app']]:
+
+      // ### `Edit` the app
+     
       location.search.startsWith('?Edit') ?
        ['div',
         ['div', {id: 'appedit-code', style: {
@@ -130,15 +136,25 @@ var rootElem = jsonml2dom(
         ['div', {id: 'appedit-content', style: {
           display: 'inline-block',
           position: 'absolute',
+          outline: '1px solid black',
           overflow: 'auto',
           top: 0, right: 0, bottom: 0,
           width: '50%'
         }}]]:
+
+// ### Run the `App`
+
       location.search.startsWith('?App') ?
         ['div', {id: 'appedit-content'}]:
+
+      // ### `Share` the app + settings
+       
       location.search.startsWith('?Share') ?
-        ['div', 'TODO: sharing-links/buttons, and general settings']:
-      /* Default: Info */
+        ['div', 
+         ['p', 'TODO: sharing-links/buttons, and general settings']]:
+
+      // ### `About` the app editor (default)
+       
        ['div', 
        'More info to come here...',
        ['ul',
@@ -147,9 +163,7 @@ var rootElem = jsonml2dom(
        ['li', 'Pricing: currently only free trial, later on plans that allows you to publish the apps outside of this site'],
        ['li', 'Key bindings during editing'],
        ['li', 'Introduction to programming + links']
-       ]]
-        ]
-]);
+       ]]]]);
 
 document.body.appendChild(rootElem);
 var codemirrorStyle = {
@@ -158,9 +172,23 @@ var codemirrorStyle = {
   width: '100%', height: '100%'
 };
 
+
 // ## Code editor
   
 
+if(!localStorage.getItem('appeditContent')) {
+  localStorage.setItem('appeditContent',
+      "db = require('reactive-db');\n\n"  +
+      "function html(code) {\n" +
+      "    db.set('html', code);\n" +
+      "}\n\n" +
+      "html(['div', {style: {textAlign: 'center'}},\n" +
+      "  ['h1', 'Change me'],\n" +
+      "  ['p', 'Try to edit the code.'], \n" +
+      "    ['p', 'Choose Edit above, and then',\n" +
+      "    ['br'], ' alter the code on the left side...']]);\n"
+      );
+}
 function createCodeMirror() {
   state.codemirror = self.CodeMirror(
       function(cmElement) {
@@ -172,15 +200,7 @@ function createCodeMirror() {
     mode: 'javascript',
     lineWrapping: true,
     lineNumbers: true,
-    value: localStorage.getItem('appeditContent') ||
-      "db = require('reactive-db');\n\n"  +
-      "function html(code) {\n" +
-      "    db.set('html', code);\n" +
-      "}\n\n" +
-      "html(['div', {style: {textAlign: 'center'}},\n" +
-      "  ['h1', 'Change me'],\n" +
-      "  ['p', 'Try to edit the text,', \n" +
-      "    ['br'], ' in the code on the left side...']]);\n"
+    value: localStorage.getItem('appeditContent')
   });
   state.codemirror.on('change', function(o) { state.onsourcechange(o); });
 }
@@ -303,7 +323,8 @@ function newWorker() {
   }
   state.worker = new Worker(workerCodeUrl);
   state.worker.onmessage = handleWorkerMessage;
-  workerExec(state.codemirror.getValue());
+  workerExec(
+      localStorage.getItem('appeditContent'));
 }
 
 // Give codemirror time to initialise, before creating the worker.
