@@ -14,10 +14,13 @@ Below is the actual source code for the application.
     
 ## App state / initialisation
       
+    if(location.search === '') {
+      location.search = '?Code';
+    }
     var state = self.appeditState;
     if(!state) {
       state = self.appeditState = {};
-      createCodeMirror();
+      setTimeout(createCodeMirror, 0);
     }
     
 ## Util
@@ -62,20 +65,88 @@ Below is the actual source code for the application.
       }
     }
       
-## UI - Code editor
+## UI
+    
+    var menuHeight = '30px';
+    var menuBackground = '#345';
+    function makeMenuItem(str) {
+    
+    }
+    var rootElem = jsonml2dom(
+        ['div', {id: 'appedit', style:{
+        }},
+          ['div', { id: 'topbar', style: {
+              display: 'inline-block',
+              position: 'absolute',
+              top: 0, left: 0, right: 0,
+              height: menuHeight,
+              textAlign: 'center',
+              font: '18px sans-serif',
+              lineHeight: '20px',
+              background: menuBackground,
+              color: '#fff'
+            }},
+            'AppEdit',
+            /*['div', {style: {
+              display: 'inline-block',
+              height: menuHeight,
+              fontSize: '13px',
+              lineHeight: '15px',
+              fontWeight: 'bold',
+              verticalAlign: 'top'
+            }},
+            'AppEdit.', ['br'], 'solsort.com'],*/
+            ' \xa0 '
+          ].concat(
+            ['Info', 'Code', 'App', 'Share']
+            .map(s => 
+              ["a", {href: '?'+s, style: {
+                display: 'inline-block',
+                textDecoration: 'none',
+                background: location.search.startsWith('?'+s) ? 
+                  '#123' : menuBackground,
+                padding: '5px 5px 4px 5px',
+                color: 'white',
+                fontSize: '14px',
+              }}, s]
+            )
+          ),
+          ['div', {id: 'appedit-main', style: {
+            display: 'inline-block',
+            position: 'absolute',
+            top: menuHeight, left: 0, right: 0 , bottom: 0
+          }}, 
+            ['div', {id: 'appedit-code', style: {
+              display: 'inline-block',
+              position: 'absolute',
+              overflow: 'auto',
+              top: 0, left: 0, bottom: 0,
+              width: location.search.startsWith('?Code') ? '50%' : 0
+            }}], 
+            ['div', {id: 'appedit-content', style: {
+              display: 'inline-block',
+              position: 'absolute',
+              overflow: 'auto',
+              top: 0, right: 0, bottom: 0,
+              width: location.search.startsWith('?Code') ? '50%' : '100%'
+            }}]]]);
+    
+    document.body.appendChild(rootElem);
+    var codemirrorStyle = {
+      position: 'absolute',
+      top: 0, left: 0,
+      width: '100%', height: '100%'
+    };
+    
+## Code editor
       
+    
     function createCodeMirror() {
       state.codemirror = self.CodeMirror(
           function(cmElement) {
             cmElement.id = "codemirror";
-            Object.assign(cmElement.style,
-                {position: "absolute",
-                top: 0,
-                left: 0,
-                width: "50%",
-                outline: "1px solid black",
-                height: "100%" });
-            document.body.appendChild(cmElement);
+            Object.assign(cmElement.style, codemirrorStyle);
+            document.getElementById('appedit-code').appendChild(cmElement);
           },
           {
         mode: 'javascript',
@@ -96,9 +167,8 @@ Below is the actual source code for the application.
     
 ## Code running within the webworker
     
-The code is included here as a template string (ES6-feature, widely supported in modern browsers. Thus we have to disable jshint (it will also not apply to the worker-code, as it is just a string). The code needs to be passed as an url to the WebWorker constructor.
+The code below is passed as an url to the WebWorker constructor.
     
-    /* jshint ignore:start */
     var workerCodeUrl = URL.createObjectURL(new Blob([`
     
 The code below runs within the worker thread, and bootstraps the environment.
@@ -202,7 +272,6 @@ Currently just an API-shim, will be implemented later
 ### End of webworker code
     
     `]));
-    /* jshint ignore:end */
     
 ## Webworker setup
     
@@ -241,15 +310,9 @@ Give codemirror time to initialise, before creating the worker.
             baseElem = jsonml2dom(
                 ["div", {
                 id: "workerHTML",
-                style: {
-                  position: "absolute",
-                  top: 0,
-                  right: 0,
-                  width: "50%",
-                  overflow: "auto"
-                }
+                style: { }
                 }]);
-            document.body.appendChild(baseElem);
+            document.getElementById('appedit-content').appendChild(baseElem);
           }
           if(baseElem.children[0]) {
             baseElem.children[0].remove();

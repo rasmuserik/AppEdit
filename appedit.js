@@ -103,9 +103,8 @@ var rootElem = jsonml2dom(
           ["a", {href: '?'+s, style: {
             display: 'inline-block',
             textDecoration: 'none',
-            background: location.search.startsWith('?'+s)
-              ? '#123'
-              : menuBackground,
+            background: location.search.startsWith('?'+s) ? 
+              '#123' : menuBackground,
             padding: '5px 5px 4px 5px',
             color: 'white',
             fontSize: '14px',
@@ -168,9 +167,8 @@ function createCodeMirror() {
 
 // ## Code running within the webworker
 
-// The code is included here as a template string (ES6-feature, widely supported in modern browsers. Thus we have to disable jshint (it will also not apply to the worker-code, as it is just a string). The code needs to be passed as an url to the WebWorker constructor.
+// The code below is passed as an url to the WebWorker constructor.
 
-/* jshint ignore:start */
 var workerCodeUrl = URL.createObjectURL(new Blob([`
 
 // The code below runs within the worker thread, and bootstraps the environment.
@@ -274,7 +272,6 @@ setHandler('eval', o =>  execute(o.code, {exports: {}}));
 // ### End of webworker code
 
 `]));
-/* jshint ignore:end */
 
 // ## Webworker setup
 
