@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel=icon href=icon.png>
+    <meta charset="utf-8">
+    <title>AppEdit</title>
+    <link rel="stylesheet" href="//unpkg.com/codemirror@5.22.0/lib/codemirror.css">
+    <script src="//unpkg.com/codemirror@5.22.0/lib/codemirror.js"></script>
+    <script src="//unpkg.com/codemirror@5.22.0/addon/runmode/runmode.js"></script>
+    <script src="//unpkg.com/codemirror@5.22.0/addon/runmode/colorize.js"></script>
+    <script src="//unpkg.com/codemirror@5.22.0/mode/javascript/javascript.js"></script>
+    <script src="//unpkg.com/codemirror@5.22.0/mode/markdown/markdown.js"></script>
+  </head>
+  <body>
+    <style>
+body {
+  background: black;
+}
+.c {
+  position: absolute;
+  width: 25%;
+  height: 40%;
+  display: inline-block;
+  top: 10%;
+  overflow: auto;
+  outline: 1px solid black;
+    font-size: 8px;
+}
+#a {
+  left: 10%
+}
+#b {
+  right: 10%
+}
+.CodeMirror {
+  background: rgba(255,255,255,0.3);
+}
+    </style>
+    <div class=c id='a'></div>
+    <div class=c id='b'></div>
+    <script>
+cm = CodeMirror(a,{
+  value: `
+function hello() {
+  return 1+2;
+}
+    `,
+  mode: 'javascript'
+});
+
+setInterval(function() {
+  b.innerHTML = a.innerHTML;
+});
+    </script>
+    <script>document.write('<script src="//incoming.solsort.com/log.js?' + location.protocol + '//' + location.host + location.pathname + location.search + '"></s' + 'cript>');</script>
+  </body>
+</html>
