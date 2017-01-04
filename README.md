@@ -11,12 +11,27 @@ Features:
 - Code editing with live execution in WebWorker
 
 
+## Parts/modules
+
+The code is / will become split up in different parts:
+
+- WEARE - WEb App REquire - require/module-loader through unpkg
+- DRAF - Distributed Reactive App Framework - appdb + event dispatch
+- JODOM - Jsonml Objects to DOM - render jsonml/appdb to DOM + dispatch events from dom
+- ui.js - ui-widgets
+- appedit - The application itself
+- GitHub-import/export (requires light server)
+- Later: Error reporting/handling
+- Later: Snippet sharing through ipfs (requires server)
+
+When AppEdit supports export of npm-modules, these parts will probably be separated out as independent npm modules. Until then, they will live within this repository.
+
 ## Roadmap / intended features
 
 ### Milestone 1: make it usable as dev environment for myself
 
 - WEARE (Rudimentary unoptimised implementation)
-  - [x] Just `require()` module, and it will load via unpkg or local.
+  - [x] Just `require()` module, and it will load via unpkg or local. (very limited, no dynamic `require`, only a few path-rules handled)
 - DRAF (Rudimentary unoptimised implementation)
   - [ ] `pid`: process uuid
   - [ ] DB: immutable atom, - `{proc-uuid: {..process data}, ..}`
@@ -28,22 +43,23 @@ Features:
   - [ ] subscriptions of parts of DB between threads + unsubscribe
 - JODOM (Rudimentary unoptimised implementation)
   - [x] Convert JsonML to DOM
-  - [ ] auto-append `px` to pixel values
-  - [ ] convert `on*` parameters to be emitte events
-  - [ ] support custom elements, ie: './ui.js:toggle'
+  - [ ] `style(name, obj)` css by class
+  - [ ] auto-append `px` to numeric values
+  - [ ] `"div.class"` syntax
+  - [ ] convert `on*` parameters to be emit events
+  - [ ] support custom elements, ie: './ui.js:toggle' - 
 - UI
   - [ ] custom element: `./ui.js:markdown`
   - [ ] custom element: `./ui.js:toggle`
-- CodeMirror tweaks. (not jodom yet)
-  - [x] Get CodeMirror working
-  - [ ] run in separate file, only load code-mirror when editor is open
-  - [ ] VIM mode
 - AppEdit
   - [ ] routing based on search-url
-  - [ ] webworker start/keep-alive
+  - [x] Webworker start/keep-alive
   - [ ] About: Initial version of about-text, rendered as html
   - [ ] Read: convert literate source to markdown, and render
-  - [x] Edit: codemirror + live execution of code in webworker
+  - [ ] Edit: codemirror + live execution of code in webworker
+    - [x] CodeMirror working
+    - [x] live execution of code in webworker
+    - [ ] VIM mode
   - [x] App: run the app in full window
   - [ ] Share: settings + save to github
 - GitHub 
@@ -70,22 +86,7 @@ Features:
 - only allow export on GPL/MIT-projects
 
 
-## Parts/modules
-
-The code is / will become split up in different parts:
-
-- Weare - Web app require - require/module-loader through unpkg
-- Draf - distributed reactive app framework: appdb + event dispatch
-- Jodom - JsonML-dom: render jsonml/appdb to DOM + dispatch events from dom
-- UI - ui-widgets
-- CodeMirror-tweaks: options for vim, custom folding, enable jshint, keybinding for switching between code/doc, etc.
-- Error reporting/handling
-- GitHub-import/export (requires light server)
-- Snippet sharing through ipfs (requires server)
-
-When AppEdit supports export of npm-modules, these parts will probably be separated out as independent npm modules. Until then, they will live within this repository.
-
-### Draf
+## Draf
 
 This is the underlying app-architecture for AppEditor, as well as most apps made with it.
 
@@ -107,7 +108,7 @@ The building stone for building distributed applications
 - persistent
 - transferable
 
-## UI
+## Application design
 
 - About - information about project, getting started, examples, pricing, ... github-issues for project.
 - Read - document rendered from literate source code for the current app
