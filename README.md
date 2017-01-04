@@ -126,7 +126,7 @@ Versions older than 10 years also fall into the public domain.
 ## Non-code Roadmap.
 
 
-- PR
+- Growth
   - Workshops
     - HTML5/App development (non-technical: personal network, coworking spaces)
     - Library-apps (library-networks, IVA?)
@@ -134,11 +134,11 @@ Versions older than 10 years also fall into the public domain.
   - Apps shared within dev environment
   - Announce on various social medias
   - Video tutorials about using app-edit / developing with javascript
-- Business model to get 
+- Business model
   - Dual-license infrastructure library: GPL/commercial
   - Paid workshops
   - Subscriptions:
     - Free Trial - only github-export to public GPL/MIT-licensed projects, and no config.xml for building cordova apps
     - Personal - for non-commercial projects only, allows you to export to private github projects, and with config.xml for phonegap build. Includes infrastructure non-GPL-license.
     - Professional - for commercial projects, includes infrastructure non-GPL-license.
-
+  - Maybe 50% subscription fee back to community/growth: bug bounties, (recursive) referral (for example identify via coupon for first month free, limit such as 100), competition-prices, contributor-prizes, ...
