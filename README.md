@@ -133,6 +133,7 @@ Versions older than 10 years also fall into the public domain.
     - Live HTML5/App prototyping (technical: @home-hackathon, cphjs, cph-frontend, ...)
   - Apps shared within dev environment
   - Announce on various social medias
+  - Video tutorials about using app-edit / developing with javascript
 - Business model to get 
   - Dual-license infrastructure library: GPL/commercial
   - Paid workshops
