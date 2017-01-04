@@ -2,7 +2,11 @@
   
 var URL = self.URL || self.webkitURL;
 var Worker = self.Worker;
-var CodeMirror = self.CodeMirror;
+var CodeMirror = require('codemirror/lib/codemirror');
+require('codemirror/addon/runmode/runmode.js');
+require('codemirror/addon/runmode/colorize.js');
+require('codemirror/mode/javascript/javascript.js');
+require('codemirror/mode/markdown/markdown.js');
 var jsonml2dom = require('./jodom.js').jsonml2dom;
 var setTimeout = self.setTimeout;
 

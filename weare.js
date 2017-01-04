@@ -12,6 +12,9 @@ function moduleUrl(module) {
     url = url.replace(/[/][^/]*$/, '/');
     url += module;
     url = url.replace(/[/][.][/]/g, '/');
+    while(-1 !== url.indexOf('/../')) {
+      url = url.replace(/[/][^/]*[/][.][.][/]/, '/');
+    }
     return url;
   } else {
     return 'https://unpkg.com/' + module;
@@ -34,9 +37,11 @@ function execute(src, base) {
   }
   var module = {exports: {}};
   try {
+    //console.log('execute', baseUrl);
     (new Function('module', 'exports', src))(module, module.exports);//jshint ignore:line
   } catch(e) {
     if(!(e instanceof RequireError)) {
+      console.log(src);
       throw e;
     }
     var prevBaseUrl = baseUrl;
