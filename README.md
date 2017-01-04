@@ -13,9 +13,12 @@ Current features:
 
 ## Roadmap / intended features
 
-- Now: 
-  - Enable working with files on GitHub.
+- Now: make it usable as dev environment for myself
+  - Enable working with files on GitHub. 
+  - Good keybindings: VIM++
+  - JavaScript and Markdown support
 - Later
+  - ClojureScript, C/C++, and opencl support
 
 
 ## Parts/modules
