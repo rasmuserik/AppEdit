@@ -16,7 +16,7 @@ Features:
 ### Milestone 1: make it usable as dev environment for myself
 
 - WEARE (Rudimentary unoptimised implementation)
-  - [ ] Just `require()` module, and it will load via unpkg or local.
+  - [x] Just `require()` module, and it will load via unpkg or local.
 - DRAF (Rudimentary unoptimised implementation)
   - [ ] `pid`: process uuid
   - [ ] DB: immutable atom, - `{proc-uuid: {..process data}, ..}`
@@ -27,7 +27,7 @@ Features:
   - [ ] `reaction(name, () => ())`, - automatically reruns, when (relevant parts of) db has changed.
   - [ ] subscriptions of parts of DB between threads + unsubscribe
 - JODOM (Rudimentary unoptimised implementation)
-  - [ ] Convert JsonML to DOM
+  - [x] Convert JsonML to DOM
   - [ ] auto-append `px` to pixel values
   - [ ] convert `on*` parameters to be emitte events
   - [ ] support custom elements, ie: './ui.js:toggle'
@@ -35,7 +35,7 @@ Features:
   - [ ] custom element: `./ui.js:markdown`
   - [ ] custom element: `./ui.js:toggle`
 - CodeMirror tweaks. (not jodom yet)
-  - [ ] Get CodeMirror working
+  - [x] Get CodeMirror working
   - [ ] run in separate file, only load code-mirror when editor is open
   - [ ] VIM mode
 - AppEdit
@@ -43,10 +43,9 @@ Features:
   - [ ] webworker start/keep-alive
   - [ ] About: Initial version of about-text, rendered as html
   - [ ] Read: convert literate source to markdown, and render
-  - [ ] Edit: Live execution of code in webworker
-  - [ ] App: run the app in full window
+  - [x] Edit: codemirror + live execution of code in webworker
+  - [x] App: run the app in full window
   - [ ] Share: settings + save to github
-  - [ ] Editor: codemirror + live execution in webworker
 - GitHub 
   - [ ] github login service - mubackend security review / notes
   - [ ] read source from github
