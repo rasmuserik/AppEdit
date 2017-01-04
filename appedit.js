@@ -1,71 +1,20 @@
-// # AppEdit JS▶
-//
-// You can try it live at https://appedit.solsort.com/.
-//
-// This is a code editor, where the edited code is executed live in a web worker. 
-// It is intended for teaching, and quickly making small HTML5/App prototypes.
-//
-// - The webworker restarts automatically when the written code is unresponsive
-// - JsonML i rendered
-// 
-// # Literate source code
-
-// Below is the actual source code for the application.
-
-// ## App state / initialisation
-  
-if(location.search === '') {
-  location.search = '?Edit';
-}
-var state = self.appeditState;
-if(!state) {
-  state = self.appeditState = {};
-  setTimeout(createCodeMirror, 0);
-}
-
-// ## Util
-  
-// ### Dependencies
+// # Dependencies
   
 var URL = self.URL || self.webkitURL;
 var Worker = self.Worker;
-  
-// ### Convert jsonml to dom
-  
-function jsonml2dom(o) { 
-  if(typeof o === 'string') {
-    return document.createTextNode(o);
-  } else if(typeof o === 'undefined') {
-    return document.createTextNode('undefined');
-  } else if(Array.isArray(o)) {
-    var node = document.createElement(o[0]);
-    var tagtype = o[0];
-    var params = o[1];
-    var firstChild;
-    if(typeof params === 'object' && params.constructor === Object) {
-      for(var k in params) {
-        if(k === 'style') {
-          Object.assign(node.style, params[k]);
-        } else {
-          node[k] = params[k];
-        }
-      }
-      firstChild = 2;
-    } else {
-      params = {};
-      firstChild = 1;
-    }
-    for(var i = firstChild; i < o.length; ++i) {
-      node.appendChild(jsonml2dom(o[i]));
-    }
-    return node;
-  } else {
-    console.log('err', o, typeof o);
-    throw 'unexpected type of parameter to jsonml2dom - ' + o;
-  }
+var CodeMirror = self.CodeMirror;
+var jsonml2dom = require('./jodom.js').jsonml2dom;
+var setTimeout = self.setTimeout;
+
+// # Initialisation
+
+if(!location.search) {
+  location.search = '?Edit';
 }
-  
-// ## UI
+var state = {};
+setTimeout(createCodeMirror, 0);
+
+// # UI
 
 var menuHeight = '36px';
 var menuBackground = '#345';
@@ -76,7 +25,7 @@ var rootElem = jsonml2dom(
     ['div', {id: 'appedit', style:{
     }},
 
-// ### Top menu
+// ## Top menu
 
       ['div', { id: 'topbar', style: {
           display: 'inline-block',
@@ -107,7 +56,7 @@ var rootElem = jsonml2dom(
         )
       ),
 
-// ### main wrapper
+// ## main wrapper
 
       ['div', {id: 'appedit-main', style: {
         display: 'inline-block',
@@ -115,14 +64,14 @@ var rootElem = jsonml2dom(
         top: menuHeight, left: 0, right: 0 , bottom: 0
       }}, 
 
-      // ### `Read` the literate code
+      // ## `Read` the literate code
       
       location.search.startsWith('?Read') ?
         ['div', 
          ['p', 'This is the documentation and source code for the current app. Click on "Edit" or "App" above to run it.'],
         ['div', 'TODO: documentation / literate source code of current app']]:
 
-      // ### `Edit` the app
+      // ## `Edit` the app
      
       location.search.startsWith('?Edit') ?
        ['div',
@@ -142,18 +91,18 @@ var rootElem = jsonml2dom(
           width: '50%'
         }}]]:
 
-// ### Run the `App`
+// ## Run the `App`
 
       location.search.startsWith('?App') ?
         ['div', {id: 'appedit-content'}]:
 
-      // ### `Share` the app + settings
+      // ## `Share` the app + settings
        
       location.search.startsWith('?Share') ?
         ['div', 
          ['p', 'TODO: sharing-links/buttons, and general settings']]:
 
-      // ### `About` the app editor (default)
+      // ## `About` the app editor (default)
        
        ['div', 
        'More info to come here...',
@@ -173,7 +122,7 @@ var codemirrorStyle = {
 };
 
 
-// ## Code editor
+// # Code editor
   
 
 if(!localStorage.getItem('appeditContent')) {
@@ -190,7 +139,7 @@ if(!localStorage.getItem('appeditContent')) {
       );
 }
 function createCodeMirror() {
-  state.codemirror = self.CodeMirror(
+  state.codemirror = CodeMirror(
       function(cmElement) {
         cmElement.id = "codemirror";
         Object.assign(cmElement.style, codemirrorStyle);
@@ -205,9 +154,9 @@ function createCodeMirror() {
   state.codemirror.on('change', function(o) { state.onsourcechange(o); });
 }
 
-// ## Webworker setup
+// # Webworker setup
 
-// ### Initialisation functions.
+// ## Initialisation functions.
 
 function newWorker() {
   if(state.worker) {
@@ -224,7 +173,7 @@ function newWorker() {
 newWorker();
 
 
-// ### Handle messages from worker to main thread
+// ## Handle messages from worker to main thread
 
 function handleWorkerMessage(msg) {
   var o = msg.data;
@@ -272,7 +221,7 @@ function workerExec(o) {
   state.worker.postMessage({type: 'eval', code: o});
 }
 
-// ## onchange
+// # onchange
 
 state.onsourcechange = function(o) {
   var content = o.getValue();
@@ -281,4 +230,3 @@ state.onsourcechange = function(o) {
 };
 
 
-// # Experiments
