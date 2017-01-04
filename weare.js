@@ -8,14 +8,14 @@ function moduleUrl(module) {
       if(-1 === url.slice(18).indexOf('/')) {
         url += '/';
       }
-    }
-    url = url.replace(/[/][^/]*$/, '/');
-    url += module;
-    url = url.replace(/[/][.][/]/g, '/');
-    while(-1 !== url.indexOf('/../')) {
-      url = url.replace(/[/][^/]*[/][.][.][/]/, '/');
-    }
-    return url;
+  }
+  url = url.replace(/[/][^/]*$/, '/');
+  url += module;
+  url = url.replace(/[/][.][/]/g, '/');
+  while(-1 !== url.indexOf('/../')) {
+    url = url.replace(/[/][^/]*[/][.][.][/]/, '/');
+  }
+  return url;
   } else {
     return 'https://unpkg.com/' + module;
   }

@@ -10,30 +10,30 @@ var reactions = {};
 
 var reactiveDB = {};
 reactiveDB.get = function(k, defaultValue) {
-        if(typeof k !== 'string') {
-          throw 'root key needs to be string';
-          // TODO handle array as recursive lookup (and numbers to access array) + typecheck
-        }
-        return (state[k] === undefined) ? defaultValue : state[k];
-      };
+  if(typeof k !== 'string') {
+    throw 'root key needs to be string';
+    // TODO handle array as recursive lookup (and numbers to access array) + typecheck
+  }
+  return (state[k] === undefined) ? defaultValue : state[k];
+};
 reactiveDB.set = function(k, v) {
-        if(typeof k !== 'string') {
-          throw 'root key needs to be string';
-          // TODO handle array as recursive lookup (and numbers to access array) + typecheck
-        }
-        state[k] = v;
-        for(var key in reactions) {
-          if(reactions[key]) {
-            reactions[key](reactiveDB);
-          }
-        }
-      };
+  if(typeof k !== 'string') {
+    throw 'root key needs to be string';
+    // TODO handle array as recursive lookup (and numbers to access array) + typecheck
+  }
+  state[k] = v;
+  for(var key in reactions) {
+    if(reactions[key]) {
+      reactions[key](reactiveDB);
+    }
+  }
+};
 reactiveDB.reaction = function(k, f) {
-        reactions[k] = f;
-        f(reactiveDB);
-      };
+  reactions[k] = f;
+  f(reactiveDB);
+};
 reactiveDB.reaction("html", function(db) {
-    postMessage({type: "html", data: db.get('html')});
+  postMessage({type: "html", data: db.get('html')});
 });
 
 module.exports = reactiveDB;
