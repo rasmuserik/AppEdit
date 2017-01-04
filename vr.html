@@ -26,19 +26,24 @@ body {
   width: 25%;
   height: 40%;
   display: inline-block;
-  top: 10%;
+  top: 13%;
   overflow: auto;
   outline: 1px solid black;
-    font-size: 8px;
+  font-size: 6px;
+  text-shadow: 
+    .4px 0px 0.4px white,
+    -.4px 0px 0.4px white,
+    0px .4px 0.4px white,
+    0px -.4px 0.4px white;
 }
 #a {
-  left: 10%
+  left: 12%
 }
 #b {
-  right: 10%
+  right: 12%
 }
 .CodeMirror {
-  background: rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.0);
 }
     </style>
     <div class=c id='a'></div>
@@ -49,6 +54,13 @@ cm = CodeMirror(a,{
 function hello() {
   return 1+2;
 }
+.CodeMirror {
+  background: rgba(255,255,255,0.3);
+}
+    </style>
+    <div class=c id='a'></div>
+    <div class=c id='b'></div>
+    <script>
     `,
   mode: 'javascript'
 });
