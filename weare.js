@@ -36,12 +36,21 @@ function execute(src, base) {
     baseUrl = base;
   }
   var module = {exports: {}};
-  try {
     //console.log('execute', baseUrl);
+    /*
+    src = '(function(module,exports){"use strict";' +
+      src + '})(module,exports);//# sourceURL=' + baseUrl;
+    self.module = module;
+    self.exports = module.exports;
+    eval(src);
+    */
+    src += '//# sourceURL=' + baseUrl;
+    //console.log('x', baseUrl, src.slice(-30));
+  try {
     (new Function('module', 'exports', src))(module, module.exports);//jshint ignore:line
   } catch(e) {
     if(!(e instanceof RequireError)) {
-      console.log(src);
+      console.log('error', e);
       throw e;
     }
     var prevBaseUrl = baseUrl;
