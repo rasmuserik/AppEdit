@@ -5,6 +5,10 @@ var Worker = self.Worker;
 var CodeMirror = require('codemirror/lib/codemirror');
 require('codemirror/addon/runmode/runmode.js');
 require('codemirror/addon/runmode/colorize.js');
+require('codemirror/addon/fold/foldcode.js');
+require('codemirror/addon/fold/brace-fold.js');
+require('codemirror/addon/fold/markdown-fold.js');
+require('codemirror/keymap/vim.js');
 require('codemirror/mode/javascript/javascript.js');
 require('codemirror/mode/markdown/markdown.js');
 var jsonml2dom = require('./jodom.js').jsonml2dom;
@@ -79,11 +83,13 @@ var rootElem = jsonml2dom(
 
     location.search.startsWith('?Edit') ?
     ['div',
-    ['div', {id: 'appedit-code', style: {
-      display: 'inline-block',
+    ['div', {
+      id: 'appedit-code', 
+     style: {
+     display: 'inline-block',
       position: 'absolute',
-      overflow: 'auto',
-      top: 0, left: 0, bottom: 0,
+     overflow: 'auto',
+   top: 0, left: 0, bottom: 0,
       width: '50%'
     }}], 
     ['div', {id: 'appedit-content', style: {
@@ -151,7 +157,9 @@ function createCodeMirror() {
       },
       {
         mode: 'javascript',
+        extraKeys: {"Ctrl-Q": function(cm){ cm.foldCode(cm.getCursor()); }},
         lineWrapping: true,
+        keyMap: 'vim',
         lineNumbers: true,
         value: localStorage.getItem('appeditContent')
       });
