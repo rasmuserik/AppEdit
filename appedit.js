@@ -85,21 +85,21 @@ var rootElem = jsonml2dom(
     ['div',
     ['div', {
       id: 'appedit-code', 
-     style: {
-     display: 'inline-block',
-      position: 'absolute',
-     overflow: 'auto',
-   top: 0, left: 0, bottom: 0,
-      width: '50%'
-    }}], 
-    ['div', {id: 'appedit-content', style: {
-      display: 'inline-block',
-      position: 'absolute',
-      outline: '1px solid black',
-      overflow: 'auto',
-      top: 0, right: 0, bottom: 0,
-      width: '50%'
-    }}]]:
+      style: {
+        display: 'inline-block',
+        position: 'absolute',
+        overflow: 'auto',
+        top: 0, left: 0, bottom: 0,
+        width: '50%'
+      }}], 
+      ['div', {id: 'appedit-content', style: {
+        display: 'inline-block',
+        position: 'absolute',
+        outline: '1px solid black',
+        overflow: 'auto',
+        top: 0, right: 0, bottom: 0,
+        width: '50%'
+      }}]]:
 
 // ## Run the `App`
 
