@@ -1,4 +1,14 @@
 var immutable = require('immutable');
+
+function randomString() {
+  return Math.random().toString(32).slice(2);
+}
+
+var pid = "PID" + randomString() + randomString() + randomString();
+
+var draf = exports;
+exports.pid = pid;
+
 var handlers = {};
 function dispatch(o) { handlers[o.type](o); }
 self.onmessage = msg => dispatch(msg.data);
@@ -8,15 +18,15 @@ setHandler('execute', o => execute(o.code, o.url));
 var state = {};
 var reactions = {};
 
-var reactiveDB = {};
-reactiveDB.get = function(k, defaultValue) {
+var draf = {};
+draf.get = function(k, defaultValue) {
   if(typeof k !== 'string') {
     throw 'root key needs to be string';
     // TODO handle array as recursive lookup (and numbers to access array) + typecheck
   }
   return (state[k] === undefined) ? defaultValue : state[k];
 };
-reactiveDB.set = function(k, v) {
+draf.set = function(k, v) {
   if(typeof k !== 'string') {
     throw 'root key needs to be string';
     // TODO handle array as recursive lookup (and numbers to access array) + typecheck
@@ -24,18 +34,18 @@ reactiveDB.set = function(k, v) {
   state[k] = v;
   for(var key in reactions) {
     if(reactions[key]) {
-      reactions[key](reactiveDB);
+      reactions[key](draf);
     }
   }
 };
-reactiveDB.reaction = function(k, f) {
+draf.reaction = function(k, f) {
   reactions[k] = f;
-  f(reactiveDB);
+  f(draf);
 };
 if(!self.document) {
-  reactiveDB.reaction("html", function(db) {
+  draf.reaction("html", function(db) {
     postMessage({type: "html", data: db.get('html')});
   });
 }
 
-module.exports = reactiveDB;
+module.exports = draf;

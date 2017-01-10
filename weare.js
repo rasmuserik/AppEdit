@@ -58,7 +58,10 @@
     };
     var wrappedSrc = '(function(module,exports,require){' +
       src + '})//# sourceURL=' + path;
-    var module = {exports: {}};
+    var module = {
+      id: path.replace('https://unpkg.com/', ''),
+      uri: path,
+      exports: {}};
     var f = eval(wrappedSrc);
     try {
       f(module, module.exports, require);

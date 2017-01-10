@@ -33,14 +33,26 @@ When AppEdit supports export of npm-modules, these parts will probably be separa
 - WEARE (Rudimentary unoptimised implementation)
   - [x] Just `require()` module, and it will load via unpkg or local. (very limited, no dynamic `require`, only a few path-rules handled)
 - DRAF (Rudimentary unoptimised implementation)
-  - [ ] `pid`: process uuid
-  - [ ] DB: immutable atom, - `{proc-uuid: {..process data}, ..}`
-  - [ ] `handleEvent(type, (event, db) => db)`.
-  - [ ] Propagation of events between workers
-  - [ ] db-access functions - `get([local-path], default)`, `world([global-path], default-value)`, - returns immutable-like value, with `toJS()`
-  - [ ] `dispatch(event)`
-  - [ ] `reaction(name, () => ())`, - automatically reruns, when (relevant parts of) db has changed.
-  - [ ] subscriptions of parts of DB between threads + unsubscribe
+  - [ ] core api functions
+    - [ ] `pid`: globally unique process id
+    - [ ] `handle(eventType, fn(state, event, data..) -> state, [opt])` opt may include whitelist(if emit across network) and callback later on.
+    - [ ] `dispatch(event, data..)` - async dispatch
+    - [ ] `dispatchSync(event, data..)` - synchronous dispatch
+    - [ ] `getIn(ks, defaultValue)`
+    - [ ] `reaction(name, fn())` - runs when state is changed
+  - [ ] builtin event handlers
+    - [ ] `weare:execute(code, uri)`
+    - [ ] `draf:getIn([pid, ks...], defaultValue)`
+    - [ ] `draf:setIn([pid, ks...], value)`
+    - [ ] `draf:subscribe(path, event(path, data))`
+    - [ ] `draf:unsubscribe(path, event(..))`
+  - features
+    - [ ] propagation of events between workers
+    - [ ] global propagation between events
+  - events `"[[dst:]ns:]type"` object:
+    - `dst` `pid:ns:type`
+    - `src` `pid[:"callback":calback-id]`
+    - `data` [...]
 - JODOM (Rudimentary unoptimised implementation)
   - [x] Convert JsonML to DOM
   - [ ] `style(name, obj)` css by class
