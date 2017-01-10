@@ -48,6 +48,7 @@
 
   var modules = {weare:{execute:execute}};
   function _execute(src, path) {
+    //console.log('execute', src);
     var require = function require(module) {
       var url = moduleUrl(path, module);
       //console.log('require', module, url);
@@ -62,9 +63,8 @@
       id: path.replace('https://unpkg.com/', ''),
       uri: path,
       exports: {}};
-    var f = eval(wrappedSrc);
     try {
-      f(module, module.exports, require);
+      eval(wrappedSrc)(module, module.exports, require);
     } catch (e) {
       if(e.constructor !== RequireError) {
         throw e;
@@ -86,10 +86,14 @@
 
   var executeQueue = _execute('require("./draf.js");', './draf.js');
   function execute(src, path) {
-    var result = executeQueue.then(function() {
+    executeQueue = executeQueue.then(function() {
       return _execute(src, path);
+      console.log('then', e);
+    }).catch(function(e) {
+      setTimeout(function() {
+        throw e;
+      }, 0);
     });
-    executeQueue = result;
   }
 
   if(typeof module === 'object') {

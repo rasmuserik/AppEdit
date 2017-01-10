@@ -61,16 +61,21 @@ function _dispatchAll() {
     var messages = messageQueue;
     messageQueue = [];
     for(var i = 0; i < messages.length; ++i) {
+      try {
       _dispatchSync(messages[i])
+      } catch(e) {
+        warn('error during dispatch:', e);
+      }
     }
 
     if(!prevState.equals(state)) {
       //console.log('reaction needed');  
-      runReactions();
       for(var k in reactions) {
-        if(typeof reactions[k] === 'function') {
+        try {
           reactions[k]();
-        }
+      } catch(e) {
+        warn('error during reaction:', e);
+      }
       }
       prevState = state;
     } else {

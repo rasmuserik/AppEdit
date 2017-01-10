@@ -196,6 +196,12 @@ draf.handle('draf.workerReady', (state, pid) => {
 // Give codemirror time to initialise, before creating the worker.
 
 newWorker();
+function workerExec(o) {
+  draf.dispatchAsync({
+      dst: 'weare.execute@' + workerPid, 
+      data: [o, location.href]
+  });
+}
 
 /*
 
