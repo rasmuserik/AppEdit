@@ -1,9 +1,9 @@
+var immutable = require('immutable');
 var handlers = {};
 function dispatch(o) { handlers[o.type](o); }
 self.onmessage = msg => dispatch(msg.data);
 self.setHandler = (name, fn) => handlers[name] = fn;
-setHandler('eval', o => execute(o.code, './'));
-
+setHandler('execute', o => execute(o.code, o.url));
 
 var state = {};
 var reactions = {};
@@ -32,8 +32,10 @@ reactiveDB.reaction = function(k, f) {
   reactions[k] = f;
   f(reactiveDB);
 };
-reactiveDB.reaction("html", function(db) {
-  postMessage({type: "html", data: db.get('html')});
-});
+if(!self.document) {
+  reactiveDB.reaction("html", function(db) {
+    postMessage({type: "html", data: db.get('html')});
+  });
+}
 
 module.exports = reactiveDB;

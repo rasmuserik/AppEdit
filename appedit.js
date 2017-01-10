@@ -137,7 +137,7 @@ location.search.startsWith('?Share') ?
 
 if(!localStorage.getItem('appeditContent')) {
   localStorage.setItem('appeditContent',
-      "db = require('./draf.js');\n\n"  +
+      "var db = require('./draf.js');\n\n"  +
       "function html(code) {\n" +
       "    db.set('html', code);\n" +
       "}\n\n" +
@@ -219,6 +219,7 @@ function handleWorkerMessage(msg) {
 }
 
 state.lastPing = Date.now();
+var silentTime;
 setInterval(function pinger() {
   silentTime = Date.now() - state.lastPing;
   if(silentTime > 2000) {
@@ -230,7 +231,7 @@ setInterval(function pinger() {
 }, 100);
 
 function workerExec(o) {
-  state.worker.postMessage({type: 'eval', code: o});
+  state.worker.postMessage({type: 'execute', code: o, url: location.href});
 }
 
 // # onchange

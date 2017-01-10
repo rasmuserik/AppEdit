@@ -1,71 +1,97 @@
-function RequireError(module) { this.module = module; }
-var baseUrl;
+(function() {
+  "use strict";
 
-function moduleUrl(module) {
-  if(module[0] === '.') {
-    url = baseUrl;
-    if(url.startsWith('https://unpkg.com/')) {
-      if(-1 === url.slice(18).indexOf('/')) {
-        url += '/';
+  function urlGet(url) {
+    return new Promise(function(resolve, reject) {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url);
+      xhr.onreadystatechange = function() {
+        if(xhr.readyState === 4) {
+          if(typeof xhr.responseText === 'string') {
+            resolve(xhr.responseText);
+          } else {
+            reject(xhr);
+          }
+        }
       }
+      xhr.send();
+    });
   }
-  url = url.replace(/[/][^/]*$/, '/');
-  url += module;
-  url = url.replace(/[/][.][/]/g, '/');
-  while(-1 !== url.indexOf('/../')) {
-    url = url.replace(/[/][^/]*[/][.][.][/]/, '/');
-  }
-  return url;
-  } else {
-    return 'https://unpkg.com/' + module;
-  }
-}
 
-var modules = {};
-
-self.require = function require(module) {
-  var result = modules[moduleUrl(module)];
-  if(result) {
-    return result;
+  function RequireError(module, url) { 
+    this.module = module; 
+    this.url = url;
   }
-  throw new RequireError(module);
-};
-
-function execute(src, base) {
-  if(base) {
-    baseUrl = base;
+  RequireError.prototype.toString = function() {
+    return 'RequireError:' + this.module +
+      ' url:' + this.url;
   }
-  var module = {exports: {}};
-    //console.log('execute', baseUrl);
-    /*
-    src = '(function(module,exports){"use strict";' +
-      src + '})(module,exports);//# sourceURL=' + baseUrl;
-    self.module = module;
-    self.exports = module.exports;
-    eval(src);
-    */
-    src += '//# sourceURL=' + baseUrl;
-    //console.log('x', baseUrl, src.slice(-30));
-  try {
-    (new Function('module', 'exports', src))(module, module.exports);//jshint ignore:line
-  } catch(e) {
-    if(!(e instanceof RequireError)) {
-      console.log('error', e);
-      throw e;
+
+  function moduleUrl(path, module) {
+    if(module === 'weare') {
+      return 'weare';
     }
-    var prevBaseUrl = baseUrl;
-    baseUrl = moduleUrl(e.module, baseUrl);
-    console.log('require("' + e.module + '") -> ', baseUrl);
-    return fetch(baseUrl)
-      .then(o => o.text())
-      .then(src => execute(src))
-      .then(module => {
-        modules[baseUrl] = module.exports;
-        baseUrl = prevBaseUrl;
-        return execute(src);
-      });
+    path = (module.startsWith('.')
+        ? path.replace(/[/][^/]*$/, '/')  
+        : 'https://unpkg.com/');
+    path = path + module;
+    while(path.indexOf('/./') !== -1) {
+      path = path.replace('/./', '/');
+    }
+    var prevPath;
+    do {
+      prevPath = path;
+      path = path.replace(/[/][^/]*[/][.][.][/]/g, '/');
+    } while(path !== prevPath);
+    return path;
   }
-  return module;
-}
 
-execute('require("./draf.js");', './');
+  var modules = {weare:{exports:execute}};
+  function _execute(src, path) {
+    var require = function require(module) {
+      var url = moduleUrl(path, module);
+      console.log('require', module, url);
+      if(!modules[url]) {
+        throw new RequireError(module, url);
+      } 
+      return modules[url];
+    };
+    var wrappedSrc = '(function(module,exports,require){' +
+      src + '})//# sourceURL=' + path;
+    var module = {exports: {}};
+    var f = eval(wrappedSrc);
+    try {
+      f(module, module.exports, require);
+    } catch (e) {
+      if(e.constructor !== RequireError) {
+        throw e;
+      }
+      return urlGet(e.url)
+        .then(function(moduleSrc) {
+          return _execute(moduleSrc, e.url);
+        })
+      .then(function(module) {
+        console.log('loaded', e.url);
+        modules[e.url] = module.exports;
+      })
+      .then(function() {
+        return _execute(src, path);
+      });
+    }
+    return Promise.resolve(module);
+  }
+
+  var executeQueue = _execute('require("./draf.js");', './draf.js');
+  function execute(src, path) {
+    var result = executeQueue.then(function() {
+      return _execute(src, path);
+    });
+    executeQueue = result;
+  }
+
+  if(typeof module === 'object') {
+    module.exports = execute;
+  } else {
+    self.execute = execute;
+  }
+})();
