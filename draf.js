@@ -1,14 +1,123 @@
 var immutable = require('immutable');
+var draf = exports;
 
+// # Generic utility functions
+//
+// Should probably be replaced with better general module
+//
 function randomString() {
   return Math.random().toString(32).slice(2);
 }
+function nextTick(f) {
+  setTimeout(f, 0);
+}
+function slice(a, start, end) {
+  return Array.prototype.slice.call(a, start, end);
+}
+function warn() {
+  console.log.apply(console, ['warn'].concat(slice(arguments)));
+}
 
+// # Internal methods
 var pid = "PID" + randomString() + randomString() + randomString();
+var state = new immutable.Map().set(pid, new immutable.Map());
+var prevState = state;
+var handlers = {};
+var messageQueue = [];
+var scheduled = false;
+var reactions = {};
+var transports = {};
+transports[pid] = o => {
+  var mbox = o.dst.slice(0, o.dst.lastIndexOf('@'));
+  if(handlers[mbox]) {
+    state = handlers[mbox].apply(o, [state].concat(o.data)) || state;
+  } else {
+    warn('missing handler for ', pid.length, o, mbox);
+  }
+}
+transports['*'] = o => self.postMessage(o);
+self.onmessage = o => {
+  //console.log('onmessage', o)
+  _dispatchAsync(o.data);
+}
+function _dispatchAsync(o) {
+   messageQueue.push(o);
+   _dispatchAll(); 
+};
+function _dispatchSync(o) {
+  //console.log(pid.slice(0,7), o);
+  o.dst = (o.dst || '').includes('@') ? o.dst : o.dst + '@' + pid;
+  var f = transports[o.dst.slice(o.dst.lastIndexOf('@') + 1)];
+  (f || transports['*'])(o);
+}
 
-var draf = exports;
-exports.pid = pid;
+function _dispatchAll() {
+  if(scheduled) {
+    return;
+  }
+  scheduled = true;
+  nextTick(function() {
+    scheduled = false;
+    var messages = messageQueue;
+    messageQueue = [];
+    for(var i = 0; i < messages.length; ++i) {
+      _dispatchSync(messages[i])
+    }
 
+    if(!prevState.equals(state)) {
+      //console.log('reaction needed');  
+      runReactions();
+      for(var k in reactions) {
+        if(typeof reactions[k] === 'function') {
+          reactions[k]();
+        }
+      }
+      prevState = state;
+    } else {
+      //console.log('reaction unneeded');  
+    }
+  });
+}
+
+// # API
+draf.pid = pid;
+draf._transports = transports;
+draf.handle = (eventType, f) => { handlers[eventType] = f; }
+draf.call = dst => _dispatchAsync({dst: dst, data: slice(arguments, 1)}); 
+draf.dispatchAsync = _dispatchAsync;
+draf.dispatchSync = (o) => { _dispatchSync(o); _dispatchAll(); };
+draf.getIn = (ks, defaultValue) => state.getIn(ks, defaultValue);
+draf.reaction = (name, f) => { reactions[name] = f; }
+
+// # Built-in event handlers
+draf.handle('weare.execute', (state, code, uri) => {
+  require('weare').execute(code, uri);
+});
+draf.handle('draf.getIn', (state, ks, mbox) => {
+  draf.dispatchAsync({dst: mbox, data: [draf.getIn(ks)]});
+});
+draf.handle('draf.setIn', (state, ks, value) => state.setIn(ks,value)); 
+
+var subscriptions = new Set();
+draf.handle('draf.subscribe', function(state, path, dst) {
+  subscriptions.add([path, dst]);
+});
+draf.handle('draf.unsubscribe', function(state, path, dst) {
+  subscriptions.delete([path, dst]);
+});
+draf.reaction('draf.subscriptions', function() {
+  for(var v of subscriptions) {
+    draf.dispatchAsync({dst: v[1], data:[draf.getIn(v[0])]});
+  }
+});
+
+try {
+  postMessage({dst: 'draf.workerReady', data: [pid]});
+} catch(e) {
+}
+
+// # Old code
+/*
 var handlers = {};
 function dispatch(o) { handlers[o.type](o); }
 self.onmessage = msg => dispatch(msg.data);
@@ -49,3 +158,4 @@ if(!self.document) {
 }
 
 module.exports = draf;
+*/

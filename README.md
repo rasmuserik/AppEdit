@@ -34,22 +34,22 @@ When AppEdit supports export of npm-modules, these parts will probably be separa
   - [x] Just `require()` module, and it will load via unpkg or local. (very limited, no dynamic `require`, only a few path-rules handled)
 - DRAF (Rudimentary unoptimised implementation)
   - [ ] core api functions
-    - [ ] `pid`: globally unique process id
-    - [ ] `handle(eventType, fn(state, event, data..) -> state, [opt])` opt may include whitelist(if emit across network) and callback later on.
-    - [ ] `dispatch(event, data..)` - async dispatch
-    - [ ] `dispatchSync(event, data..)` - synchronous dispatch
+    - [x] `pid`: globally unique process id
+    - [ ] `handle(eventType, fn(state, data..) -> state, [opt])` opt may include whitelist(if emit across network) and callback later on.
+    - [ ] `dispatch(mbox, data..)` - async dispatch
+    - [ ] `dispatchSync(mbox, data..)` - synchronous dispatch - only local events
     - [ ] `getIn(ks, defaultValue)`
     - [ ] `reaction(name, fn())` - runs when state is changed
   - [ ] builtin event handlers
     - [ ] `weare:execute(code, uri)`
-    - [ ] `draf:getIn([pid, ks...], defaultValue)`
+    - [ ] `draf:getIn([pid, ks...], mbox)`
     - [ ] `draf:setIn([pid, ks...], value)`
     - [ ] `draf:subscribe(path, event(path, data))`
     - [ ] `draf:unsubscribe(path, event(..))`
   - features
     - [ ] propagation of events between workers
     - [ ] global propagation between events
-  - events `"[[dst:]ns:]type"` object:
+  - events `"ns:type@PID"` object:
     - `dst` `pid:ns:type`
     - `src` `pid[:"callback":calback-id]`
     - `data` [...]

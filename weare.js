@@ -46,11 +46,11 @@
     return path;
   }
 
-  var modules = {weare:{exports:execute}};
+  var modules = {weare:{execute:execute}};
   function _execute(src, path) {
     var require = function require(module) {
       var url = moduleUrl(path, module);
-      console.log('require', module, url);
+      //console.log('require', module, url);
       if(!modules[url]) {
         throw new RequireError(module, url);
       } 
@@ -74,7 +74,7 @@
           return _execute(moduleSrc, e.url);
         })
       .then(function(module) {
-        console.log('loaded', e.url);
+        //console.log('loaded', e.url);
         modules[e.url] = module.exports;
       })
       .then(function() {
@@ -93,7 +93,7 @@
   }
 
   if(typeof module === 'object') {
-    module.exports = execute;
+    exports.execute = execute;
   } else {
     self.execute = execute;
   }

@@ -1,6 +1,7 @@
 // # Dependencies
 
 var URL = self.URL || self.webkitURL;
+var draf = require('./draf.js');
 var Worker = self.Worker;
 var CodeMirror = require('codemirror/lib/codemirror');
 require('codemirror/addon/runmode/runmode.js');
@@ -170,20 +171,33 @@ function createCodeMirror() {
 
 // ## Initialisation functions.
 
+var worker;
+var workerPid;
 function newWorker() {
-  if(state.worker) {
-    state.worker.terminate();
+  if(worker) {
+    draf._transports[workerPid] = undefined;
+    workerPid = undefined;
+    worker.terminate();
   }
-  state.worker = new Worker('./weare.js');
-  state.worker.onmessage = handleWorkerMessage;
+  worker = new Worker('./weare.js');
+  worker.onmessage = o => draf.dispatchAsync(o.data);
   // TODO this should actually be queued until the worker is ready (all dependencies are loaded instead of just waiting 500ms
-  setTimeout(o => workerExec(localStorage.getItem('appeditContent')), 500);
+ // setTimeout(o => workerExec(localStorage.getItem('appeditContent')), 500);
 }
+draf.handle('draf.workerReady', (state, pid) => {
+  console.log('worker ready', pid);
+  workerPid = pid;
+  draf._transports[workerPid] = o => worker.postMessage(o);
+  draf.dispatchAsync({dst: 'weare.execute@' + workerPid, 
+    data: [localStorage.getItem('appeditContent'), location.href]});
+});
+
 
 // Give codemirror time to initialise, before creating the worker.
 
 newWorker();
 
+/*
 
 // ## Handle messages from worker to main thread
 
@@ -222,17 +236,19 @@ state.lastPing = Date.now();
 var silentTime;
 setInterval(function pinger() {
   silentTime = Date.now() - state.lastPing;
-  if(silentTime > 2000) {
+  if(silentTime > 200000) {
     console.log('worker not answering, restarting');
     state.lastPing = Date.now();
     newWorker();
   }
   workerExec('self.postMessage({type: "ping"})');
-}, 100);
+}, 1000);
 
 function workerExec(o) {
-  state.worker.postMessage({type: 'execute', code: o, url: location.href});
+  state.worker.postMessage({dst: 'weare.execute', data: [o, location.href]});
+  //state.worker.postMessage({type: 'execute', code: o, url: location.href});
 }
+*/
 
 // # onchange
 
