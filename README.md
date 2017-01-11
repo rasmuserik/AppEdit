@@ -15,72 +15,42 @@ Features:
 
 The code is / will become split up in different parts:
 
-- WEARE - WEb App REquire - require/module-loader through unpkg
-- DRAF - Distributed Reactive App Framework - appdb + event dispatch
-- JODOM - Jsonml Objects to DOM - render jsonml/appdb to DOM + dispatch events from dom
-- ui.js - ui-widgets
-- appedit - The application itself
+- [REUN](https://reun.solsort.com) - require/module-loader through unpkg
+- [DireApe](https://direape.solsort.com) - Distributed Reactive App Environment - message passing + state + handle child processes
+- AppEdit - The application itself
 - GitHub-import/export (requires light server)
-- Later: Error reporting/handling
-- Later: Snippet sharing through ipfs (requires server)
-
-When AppEdit supports export of npm-modules, these parts will probably be separated out as independent npm modules. Until then, they will live within this repository.
 
 ## Roadmap / intended features
 
 ### Milestone 1: make it usable as dev environment for myself
 
-- WEARE (Rudimentary unoptimised implementation)
-  - [x] Just `require()` module, and it will load via unpkg or local. (very limited, no dynamic `require`, only a few path-rules handled)
-- DRAF (Rudimentary unoptimised implementation)
-  - [ ] core api functions
-    - [x] `pid`: globally unique process id
-    - [ ] `handle(eventType, fn(state, data..) -> state, [opt])` opt may include whitelist(if emit across network) and callback later on.
-    - [ ] `dispatch(mbox, data..)` - async dispatch
-    - [ ] `dispatchSync(mbox, data..)` - synchronous dispatch - only local events
-    - [ ] `getIn(ks, defaultValue)`
-    - [ ] `reaction(name, fn())` - runs when state is changed
-  - [ ] builtin event handlers
-    - [ ] `weare:execute(code, uri)`
-    - [ ] `draf:getIn([pid, ks...], mbox)`
-    - [ ] `draf:setIn([pid, ks...], value)`
-    - [ ] `draf:subscribe(path, event(path, data))`
-    - [ ] `draf:unsubscribe(path, event(..))`
-  - features
-    - [ ] propagation of events between workers
-    - [ ] global propagation between events
-  - events `"ns:type@PID"` object:
-    - `dst` `pid:ns:type`
-    - `src` `pid[:"callback":calback-id]`
-    - `data` [...]
-- JODOM (Rudimentary unoptimised implementation)
-  - [x] Convert JsonML to DOM
-  - [ ] `style(name, obj)` css by class
-  - [ ] auto-append `px` to numeric values
-  - [ ] `"div.class"` syntax
-  - [ ] convert `on*` parameters to be emit events
-  - [ ] support custom elements, ie: './ui.js:toggle' - 
-- UI
-  - [ ] custom element: `./ui.js:markdown`
-  - [ ] custom element: `./ui.js:toggle`
+- [x] Reun 
+- [x] DireApe 
 - AppEdit
   - [ ] routing based on search-url
-  - [x] Webworker start/keep-alive
+  - [x] Webworker start
+  - [ ] webworker keep-live
   - [ ] About: Initial version of about-text, rendered as html
   - [ ] Read: convert literate source to markdown, and render
-  - [ ] Edit: codemirror + live execution of code in webworker
+  - [x] Edit: codemirror + live execution of code in webworker
     - [x] CodeMirror working
     - [x] live execution of code in webworker
-    - [ ] VIM mode
+    - [x] VIM mode
   - [x] App: run the app in full window
   - [ ] Share: settings + save to github
+    - [ ] choose whether to use 
+- [ ] solsort batteries included util library
+  - [ ] move jodom utilities into library
+  - [ ] add functionality as needed
 - GitHub 
   - [ ] github login service - mubackend security review / notes
   - [ ] read source from github
   - [ ] write file to github
 
-### Later
+### Maybe Later
 
+- Better error reporting/handling
+- Snippet sharing through ipfs (requires server)
 - editor in VR
 - simple reactive 3d-rendering library
 - export of `package.json`, based on current `module.meta.package` content.
@@ -96,29 +66,14 @@ When AppEdit supports export of npm-modules, these parts will probably be separa
 - Optionally only run edited code on 'play', choose where to run the code (`webworker`, `main thread`, `serviceworker`, `browser-addon`, ...)
 - LightScript support
 - only allow export on GPL/MIT-projects
-
-
-## Draf
-
-This is the underlying app-architecture for AppEditor, as well as most apps made with it.
-
-Every process has:
-
-- `pid` - process uuid
-- `db` - local cache of distributed db. Reactive atom with immutable JSON-like data structure, - can only be altered through events.
-  - `db[pid]` - application local data
-- events:
-  - `{type: string, dst: pid, data:...}` (optional `src:`, added later)
-
-
-- NB: evt. https://github.com/tc39/proposal-observable
-- NB: CBOR, cbor-js
-
-The building stone for building distributed applications
-
-- event handling/queue
-- persistent
-- transferable
+- JODOM - Jsonml Objects to DOM - render jsonml/appdb to DOM + dispatch events from dom
+- JODOM (Rudimentary unoptimised implementation)
+  - [x] Convert JsonML to DOM
+  - [ ] `style(name, obj)` css by class
+  - [ ] auto-append `px` to numeric values
+  - [ ] `"div.class"` syntax
+  - [ ] convert `on*` parameters to be emit events
+  - [ ] support custom elements, ie: './ui.js:toggle' - 
 
 ## Application design
 
@@ -131,18 +86,18 @@ The building stone for building distributed applications
 
 ## License
 
-The software is copyrighted solsort.com ApS, and available under GPLv3, as well as proprietary license upon request.
+This software is copyrighted solsort.com ApS, and available under GPLv3, as well as proprietary license upon request.
 
 Versions older than 10 years also fall into the public domain.
 
 ## Non-code Roadmap.
-
 
 - Growth
   - Workshops
     - HTML5/App development (non-technical: personal network, coworking spaces)
     - Library-apps (library-networks, IVA?)
     - Live HTML5/App prototyping (technical: @home-hackathon, cphjs, cph-frontend, ...)
+    - Local teaching
   - Apps shared within dev environment
   - Announce on various social medias
   - Video tutorials about using app-edit / developing with javascript
