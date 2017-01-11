@@ -1,8 +1,8 @@
 // # Dependencies
 
 var URL = self.URL || self.webkitURL;
-var draf = require('./draf.js');
 var Worker = self.Worker;
+var da = require('direape');
 var CodeMirror = require('codemirror/lib/codemirror');
 require('codemirror/addon/runmode/runmode.js');
 require('codemirror/addon/runmode/colorize.js');
@@ -14,6 +14,8 @@ require('codemirror/mode/javascript/javascript.js');
 require('codemirror/mode/markdown/markdown.js');
 var jsonml2dom = require('./jodom.js').jsonml2dom;
 var setTimeout = self.setTimeout;
+var slice = (a, start, end) => Array.prototype.slice.call(a, start, end);
+var workerPid;
 
 // # Initialisation
 
@@ -136,18 +138,19 @@ location.search.startsWith('?Share') ?
 // # Code editor
 
 
-if(!localStorage.getItem('appeditContent')) {
-  localStorage.setItem('appeditContent',
-      "var db = require('./draf.js');\n\n"  +
-      "function html(code) {\n" +
-      "    db.set('html', code);\n" +
-      "}\n\n" +
-      "html(['div', {style: {textAlign: 'center'}},\n" +
-      "  ['h1', 'Change me'],\n" +
-      "  ['p', 'Try to edit the code.'], \n" +
-      "    ['p', 'Choose Edit above, and then',\n" +
-      "    ['br'], ' alter the code on the left side...']]);\n"
-      );
+if(true|| !localStorage.getItem('appeditContent')) {
+  localStorage.setItem('appeditContent', 
+      "var da = require('direape');\n" +
+      "da.dispatch(da.msg(da.parent, 'appedit:html',`\n" +
+      "<center>\n" +
+      "  <h1>Change me</h1>\n" +
+      "  <p>Try to edit the code.</p>\n" +
+      "  <p>Choose Edit above, and then<br>\n" +
+      "     alter the code on the left side...</p>\n" +
+      "  (vi keybindings is enabled,<br>\n" +
+      "  so press <tt>i</tt> to insert)\n" +
+      "</center>\n" +
+      "`));" );
 }
 function createCodeMirror() {
   state.codemirror = CodeMirror(
@@ -169,99 +172,88 @@ function createCodeMirror() {
 
 // # Webworker setup
 
-// ## Initialisation functions.
+function worker() {
+  da.dispatch(da.msg.apply(null, [workerPid].concat(slice(arguments))));
+}
 
-var worker;
-var workerPid;
 function newWorker() {
-  if(worker) {
-    draf._transports[workerPid] = undefined;
+  if(workerPid) {
+    da.kill(workerPid);
     workerPid = undefined;
-    worker.terminate();
   }
-  worker = new Worker('./weare.js');
-  worker.onmessage = o => draf.dispatchAsync(o.data);
-  // TODO this should actually be queued until the worker is ready (all dependencies are loaded instead of just waiting 500ms
- // setTimeout(o => workerExec(localStorage.getItem('appeditContent')), 500);
-}
-draf.handle('draf.workerReady', (state, pid) => {
-  console.log('worker ready', pid);
-  workerPid = pid;
-  draf._transports[workerPid] = o => worker.postMessage(o);
-  draf.dispatchAsync({dst: 'weare.execute@' + workerPid, 
-    data: [localStorage.getItem('appeditContent'), location.href]});
-});
+  da.spawn().then(pid => {
+    workerPid = pid;
+      workerExec('require("direape").parent = "' + da.pid + '";');
+      workerExec(localStorage.getItem("appeditContent"));
+    });
+  }
+  newWorker();
+  function workerExec(str) {
+    worker('reun:run', str, location.href);
+  }
+  // TODO ping/keepalive
 
+  /*
+  // ## Handle messages from worker to main thread
 
-// Give codemirror time to initialise, before creating the worker.
+  function handleWorkerMessage(msg) {
+    var o = msg.data;
+    switch(o.type) {
+      case "ping":
+        state.lastPing = Date.now();
+        break;
+      case "html":
+        var html = o.data;
+        if(!Array.isArray(o.data)) {
+          html = ["div", "Error: html from worker is not JsonML",
+            ["pre", JSON.stringify(o.data, null, 4)]];
+        } 
+        var baseElem = document.getElementById("workerHTML");
+        if(!baseElem) {
+          baseElem = jsonml2dom(
+              ["div", {
+                id: "workerHTML",
+                style: { }
+              }]);
+          document.getElementById('appedit-content').appendChild(baseElem);
+        }
+        if(baseElem.children[0]) {
+          baseElem.children[0].remove();
+        }
+        baseElem.appendChild(jsonml2dom(html));
+        break;
+      default:
+        console.log('unhandled worker message', o);
+    }
+  }
 
-newWorker();
-function workerExec(o) {
-  draf.dispatchAsync({
-      dst: 'weare.execute@' + workerPid, 
-      data: [o, location.href]
-  });
-}
-
-/*
-
-// ## Handle messages from worker to main thread
-
-function handleWorkerMessage(msg) {
-  var o = msg.data;
-  switch(o.type) {
-    case "ping":
+  state.lastPing = Date.now();
+  var silentTime;
+  setInterval(function pinger() {
+    silentTime = Date.now() - state.lastPing;
+    if(silentTime > 200000) {
+      console.log('worker not answering, restarting');
       state.lastPing = Date.now();
-      break;
-    case "html":
-      var html = o.data;
-      if(!Array.isArray(o.data)) {
-        html = ["div", "Error: html from worker is not JsonML",
-          ["pre", JSON.stringify(o.data, null, 4)]];
-      } 
-      var baseElem = document.getElementById("workerHTML");
-      if(!baseElem) {
-        baseElem = jsonml2dom(
-            ["div", {
-              id: "workerHTML",
-              style: { }
-            }]);
-        document.getElementById('appedit-content').appendChild(baseElem);
-      }
-      if(baseElem.children[0]) {
-        baseElem.children[0].remove();
-      }
-      baseElem.appendChild(jsonml2dom(html));
-      break;
-    default:
-      console.log('unhandled worker message', o);
+      newWorker();
+    }
+    workerExec('self.postMessage({type: "ping"})');
+  }, 1000);
+
+  function workerExec(o) {
+    state.worker.postMessage({dst: 'weare.execute', data: [o, location.href]});
+    //state.worker.postMessage({type: 'execute', code: o, url: location.href});
   }
-}
+  */
 
-state.lastPing = Date.now();
-var silentTime;
-setInterval(function pinger() {
-  silentTime = Date.now() - state.lastPing;
-  if(silentTime > 200000) {
-    console.log('worker not answering, restarting');
-    state.lastPing = Date.now();
-    newWorker();
-  }
-  workerExec('self.postMessage({type: "ping"})');
-}, 1000);
+  // # onchange
 
-function workerExec(o) {
-  state.worker.postMessage({dst: 'weare.execute', data: [o, location.href]});
-  //state.worker.postMessage({type: 'execute', code: o, url: location.href});
-}
-*/
-
-// # onchange
-
-state.onsourcechange = function(o) {
-  var content = o.getValue();
-  localStorage.setItem("appeditContent", content);
-  workerExec(content);
-};
+  state.onsourcechange = function(o) {
+    var content = o.getValue();
+    localStorage.setItem("appeditContent", content);
+    workerExec(content);
+  };
 
 
+  da.handle('appedit:html', (state, html) => {
+    document.getElementById('appedit-content').innerHTML = html;
+});
