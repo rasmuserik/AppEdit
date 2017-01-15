@@ -127,6 +127,9 @@ location.search.startsWith('?Share') ?
   ['li', 'Introduction to programming + links']
   ]]]]);
 
+  if(document.getElementById('app')) {
+    document.getElementById('app').remove();
+  }
   document.body.appendChild(rootElem);
   var codemirrorStyle = {
     position: 'absolute',
