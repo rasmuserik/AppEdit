@@ -37,15 +37,22 @@ body {
 .topbar-active{
   background: #123;
 }
+.main {
+  display: inline-block;
+  position: absolute;
+  overflow: auto;
+  left: 0; right:0; top: 36px; bottom:0
+}
     </style>
   </head>
   <body>
     <div id=topbar><img src=icon.png><a href=?About id=topbarAbout>About</a><a href=?Read id=topbarRead>Read</a><a href=?Edit id=topbarEdit>Edit</a><a href=?App id=topbarApp>App</a><a href=?Share id=topbarShare>Share</a></div>
+
     <h1 id=loading>Loading, may take a while..</h1>
     <div id=app>
-      
+      <h1>Temporarily down due to development</h1>
     </div>
-    <h1>Temporarily down due to development</h1>
+
     <script src=https://unpkg.com/reun></script>
     <script>reun.require('./appedit.js');</script>
     <script>document.write('<script src="//incoming.solsort.com/log.js?' + location.protocol + '//' + location.host + location.pathname + location.search + '"></s' + 'cript>');</script>
