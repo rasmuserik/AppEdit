@@ -7,6 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <link rel=icon href=icon.png>
+    <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet"> 
     <meta charset="utf-8">
     <title>AppEdit</title>
     <link rel="stylesheet" href="//unpkg.com/codemirror@5.22.0/lib/codemirror.css">
@@ -89,17 +90,16 @@ body {
   border: 10px solid white;
   vertical-align: top;
 }
+@media (max-width: 800px) {
+  .pricing>div {
+    width: 99%;
+  }
+}
 .pricing>div>div {
   border: 1px solid #ccc;
   border-radius: 5px;
   padding: 10px;
 }
-.pricing .line {
-  margin: 0 -10px 0 -10px;
-  height: 0px;
-  border-top: 1px solid #ccc;
-}
-
 .pricing h3 {
   box-sizing: border-box;
   border-bottom: 1px solid #ccc;
@@ -183,7 +183,7 @@ document.write(
           <div>
             <h3>Free Trial</h3>
             <p>Only for<br> open&nbsp;source software, under MIT or GPLv3 licenses.</p>
-            <div class=line></div>
+            <hr>
             <p>Distribution as <ul>
               <li>HTML5-App on GitHub Pages</li>
               <li>NPM module</li>
