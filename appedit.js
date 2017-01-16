@@ -36,6 +36,7 @@ function read() {
 // # App
 //
 function app() {
+  document.getElementById('app').innerHTML = 'Starting app...';
   da.handle('appedit:html', (state, html) => {
     document.getElementById('app').innerHTML = 
       '<div id=appedit-content class=main></div>';
@@ -70,10 +71,17 @@ function edit() {
   require('codemirror/mode/javascript/javascript.js');
   require('codemirror/mode/markdown/markdown.js');
 
-  document.getElementById('app').innerHTML =
-    '<div id=appedit-code class=main style=right:50%></div>' +
-    '<div id=appedit-content class=main ' +
-    'style="left:50%;outline:1px solid black"></div>';
+  if(window.innerHeight > window.innerWidth) {
+    document.getElementById('app').innerHTML =
+      '<div id=appedit-code class=main style=bottom:50%></div>' +
+      '<div id=appedit-content class=main ' +
+      'style="top:55%;outline:1px solid black"></div>';
+  } else {
+    document.getElementById('app').innerHTML =
+      '<div id=appedit-code class=main style=right:50%></div>' +
+      '<div id=appedit-content class=main ' +
+      'style="left:50%;outline:1px solid black"></div>';
+  }
 
   var codemirrorStyle = {
     position: 'absolute',
