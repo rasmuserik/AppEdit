@@ -51,9 +51,43 @@ function share() {
 
 # Share 
 
-      options to share on github
+      _not implemented yet, will contain the following:_
 
-      ...not implemented yet...
+      If modified, notice need to login to github to save/share.  Notice: will write/publish current version to github (if modified). Also show current name.
+
+      Share app buttons: fb, twitter, linkedin, ...
+
+      Share documentation buttons: fb, twitter, linkedin, ...
+
+      Share source code editing buttons: fb, twitter, linkedin, ...
+
+
+# Distribution
+
+      show/upload icon for project
+
+      TODO: guide to \`module.meta\` / preparing for release
+
+      - select application name (needed for saving) - also how to rename project
+      - select license
+
+## Deploy to Web
+
+      TODO: guide to set up project with github pages.
+
+      guide to CNAME
+
+## Deploy to Android, iOS, and Windows Phone
+
+      TODO: guide to set up project for Cordova / PhoneGap Build
+
+## Deploy to Facebook
+
+      TODO: guide to release as app on facebook
+
+## Deploy to Chrome
+
+      TODO: guide to release as a Chrome app
 
       `.replace(/\n */g, '\n'));
 }
