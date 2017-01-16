@@ -10,9 +10,41 @@
     <meta charset="utf-8">
     <title>AppEdit</title>
     <link rel="stylesheet" href="//unpkg.com/codemirror@5.22.0/lib/codemirror.css">
+    <style>
+body {
+  font-family: sans-serif;
+  margin: 0; padding: 0;
+}
+#topbar {
+  height: 36px;
+  text-align: left;
+  background: #345;
+
+}
+#topbar>img{
+  display: inline-block;
+  height: 36px;
+}
+#topbar>a{
+  display: inline-block;
+  vertical-align: top;
+  text-decoration: none;
+  height: 20px;
+  padding: 9px 10px 7px 10px;
+  color: #fff;
+  font-size: 16px;
+}
+.topbar-active{
+  background: #123;
+}
+    </style>
   </head>
   <body>
-    <div id=app>Loading, may take a while..</div>
+    <div id=topbar><img src=icon.png><a href=?About id=topbarAbout>About</a><a href=?Read id=topbarRead>Read</a><a href=?Edit id=topbarEdit>Edit</a><a href=?App id=topbarApp>App</a><a href=?Share id=topbarShare>Share</a></div>
+    <h1 id=loading>Loading, may take a while..</h1>
+    <div id=app>
+      
+    </div>
     <script src=https://unpkg.com/reun></script>
     <script>reun.require('./appedit.js');</script>
     <script>document.write('<script src="//incoming.solsort.com/log.js?' + location.protocol + '//' + location.host + location.pathname + location.search + '"></s' + 'cript>');</script>
