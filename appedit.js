@@ -30,8 +30,8 @@ var route = location.search.slice(1).split('/');
 route[0] = route[0] || 'About';
 
 // # UI
-document.getElementById('topbar'+route[0]).className = 'topbar-active';
 document.getElementById('loading').remove();
+(document.getElementById('topbar'+route[0])||{}).className = 'topbar-active';
 
 var menuHeight = '36px';
 var menuBackground = '#345';
