@@ -143,8 +143,9 @@ pre {
       </p>
       <script>
 document.write(
-    ['solsort/direape', 
-    'solsort/appedit', 
+    ['Read/js/gh/solsort/direape', 
+    'Read/js/gh/solsort/appedit', 
+    'Read/js/gh/solsort/reun', 
     'solsort/mubackend', 
     'solsort/dots-and-boxes', 
     'solsort/single-touch-snake', 
@@ -155,13 +156,12 @@ document.write(
     'solsort/dkcities', 
     'solsort/planetcute', 
     'solsort/notescore', 
-    'solsort/bion', 
-    'solsort/reun'
+    'solsort/bion'
     ].map(s =>
       '<a class=example-link ' +
-      'href=https://appedit.solsort.com/?Edit/github/' + s + '>' +
+      'href=?' + s + '>' +
       '<img src=https://github.com/' + 
-      s + '/raw/master/icon.png ' +
+      s.split('/').slice(-2).join('/') + '/raw/master/icon.png ' +
       'class=example-link></a>'
       ).join(''));
       </script>
