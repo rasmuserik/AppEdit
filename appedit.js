@@ -1,6 +1,6 @@
 // # Dependencies
 
-var da = require('direape@0.0');
+var da = require('direape@0.1');
 var slice = (a, start, end) => Array.prototype.slice.call(a, start, end);
 
 // # UI
@@ -37,7 +37,7 @@ function read() {
 //
 function app() {
   document.getElementById('app').innerHTML = 'Starting app...';
-  da.handle('appedit:html', (state, html) => {
+  da.handle('appedit:html', (html) => {
     document.getElementById('app').innerHTML = 
       '<div id=appedit-content class=main></div>';
     document.getElementById('appedit-content').innerHTML = html;
@@ -123,10 +123,14 @@ function edit() {
     width: '100%', height: '100%'
   };
 
-  if(!localStorage.getItem('appeditContent')) {
+  if(true || !localStorage.getItem('appeditContent')) {
     localStorage.setItem('appeditContent', 
-        "var da = require('direape@0.0');\n" +
-        "da.dispatch(da.msg(da.parent, 'appedit:html',`\n" +
+        "// # Sample app \n//\n" +
+        "// This is a bit of documentation, try 'Read' above. " +
+        "Code can be written as semi-literate code, see more here " +
+        "<https://en.wikipedia.org/wiki/Literate_programming>\n\n" +
+        "var da = require('direape@0.1');\n" +
+        "da.run(da.parent, 'appedit:html',`\n" +
         "<center>\n" +
         "  <h1>Change me</h1>\n" +
         "  <p>Try to edit the code.</p>\n" +
@@ -135,7 +139,7 @@ function edit() {
         "  (vi keybindings is enabled,<br>\n" +
         "  so press <tt>i</tt> to insert)\n" +
         "</center>\n" +
-        "`));" );
+        "`);" );
   }
 
   var codemirror;
@@ -161,7 +165,7 @@ function edit() {
     });
   }
 
-  da.handle('appedit:html', (state, html) => {
+  da.handle('appedit:html', (html) => {
     document.getElementById('appedit-content').innerHTML = html;
   });
   setTimeout(createCodeMirror, 0);
@@ -182,12 +186,11 @@ function newWorker() {
   }
   da.spawn().then(pid => {
     workerPid = pid;
-    workerExec('require("direape@0.0").parent = "' + da.pid + '";');
     workerExec(localStorage.getItem("appeditContent"));
   });
 }
 newWorker();
 function workerExec(str) {
-  worker('reun:run', str, location.href);
+  workerPid && da.run(workerPid, 'reun:run', str, location.href);
 }
 // TODO ping/keepalive
