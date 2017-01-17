@@ -1,4 +1,11 @@
-// # JS▶ &nbsp; _AppEdit_
+// <img src=https://appedit.solsort.com/icon.png width=96 height=96 align=right>
+//
+// [![website](https://img.shields.io/badge/website-appedit.solsort.com-blue.svg)](https://appedit.solsort.com/) 
+// [![github](https://img.shields.io/badge/github-solsort/appedit-blue.svg)](https://github.com/solsort/appedit)
+// [![codeclimate](https://img.shields.io/codeclimate/github/solsort/appedit.svg)](https://codeclimate.com/github/solsort/appedit)
+// [![travis](https://img.shields.io/travis/solsort/appedit.svg)](https://travis-ci.org/solsort/appedit)
+//
+// # AppEdit
 // 
 // This is a code editor, where the edited code is executed live in a web worker. It is intended for teaching, and quickly making small HTML5/App prototypes.
 // 
