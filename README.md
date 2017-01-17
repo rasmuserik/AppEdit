@@ -1,10 +1,9 @@
-<img src=https://appedit.solsort.com/icon.png width=96 height=96 align=right>
+<img src=https://AppEdit.solsort.com/icon.png width=96 height=96 align=right>
 
-[![website](https://img.shields.io/badge/website-appedit.solsort.com-blue.svg)](https://appedit.solsort.com/) 
-[![github](https://img.shields.io/badge/github-solsort/appedit-blue.svg)](https://github.com/solsort/appedit)
-[![codeclimate](https://img.shields.io/codeclimate/github/solsort/appedit.svg)](https://codeclimate.com/github/solsort/appedit)
-[![travis](https://img.shields.io/travis/solsort/appedit.svg)](https://travis-ci.org/solsort/appedit)
-[![npm](https://img.shields.io/npm/v/appedit.svg)](https://www.npmjs.com/package/appedit)
+[![website](https://img.shields.io/badge/website-AppEdit.solsort.com-blue.svg)](https://AppEdit.solsort.com/) 
+[![github](https://img.shields.io/badge/github-solsort/AppEdit-blue.svg)](https://github.com/solsort/AppEdit)
+[![codeclimate](https://img.shields.io/codeclimate/github/solsort/AppEdit.svg)](https://codeclimate.com/github/solsort/AppEdit)
+[![travis](https://img.shields.io/travis/solsort/AppEdit.svg)](https://travis-ci.org/solsort/AppEdit)
 
 # AppEdit
 
