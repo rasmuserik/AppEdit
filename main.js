@@ -143,7 +143,7 @@ document.getElementById('loading').remove();
 
 // # Load/save
 
-if(route[1] === 'js' && route[2] === 'github') {
+if(route[1] === 'js' && route[2] === 'gh') {
   loadFromGithub();
 } 
 
