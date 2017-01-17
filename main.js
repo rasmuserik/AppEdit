@@ -121,9 +121,9 @@
 var da = require('direape@0.1');
 var slice = (a, start, end) => Array.prototype.slice.call(a, start, end);
 
-// # UI
+// # routing
 //
-var route = location.search.slice(1).split('/');
+var route = location.search.slice(1).split('-');
 route[0] = route[0] || 'About';
 
 document.getElementById('topbar'+route[0]).className = 'topbar-active';
@@ -137,6 +137,15 @@ document.getElementById('topbar'+route[0]).className = 'topbar-active';
 })[route[0]]();
 
 document.getElementById('loading').remove();
+
+// # Load/save
+
+if(route[1] === 'github') {
+  loadFromGithub();
+}
+function loadFromGithub() {
+  console.log('load-from-github', route);
+}
 
 // # Read
 //
@@ -246,7 +255,7 @@ function edit() {
 
   if(true || !localStorage.getItem('appeditContent')) {
     localStorage.setItem('appeditContent', 
-        "// # Sample app \n//\n" +
+        "//\ # Sample app \n//\n" +
         "// This is a bit of documentation, try 'Read' above. " +
         "Code can be written as semi-literate code, see more here " +
         "<https://en.wikipedia.org/wiki/Literate_programming>\n\n" +
@@ -320,3 +329,23 @@ function workerExec(str) {
     .then(o =>  console.log('run-result', o));
 }
 // TODO ping/keepalive
+//
+// # Utility functions
+
+function urlGet(url) {
+  return new Promise(function(resolve, reject) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url);
+    xhr.onreadystatechange = function() {
+      if(xhr.readyState === 4) {
+        if(typeof xhr.responseText === 'string') {
+          resolve(xhr.responseText);
+        } else {
+          reject(xhr);
+        }
+      }
+    }
+    xhr.send();
+  });
+}
+
