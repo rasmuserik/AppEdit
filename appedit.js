@@ -107,9 +107,9 @@ function edit() {
 
   if(window.innerWidth <= 1000) {
     document.getElementById('app').innerHTML =
-      '<div id=appedit-code class=main style=bottom:45%></div>' +
+      '<div id=appedit-code class=main style=top:45%></div>' +
       '<div id=appedit-content class=main ' +
-      'style="top:55%;outline:1px solid black"></div>';
+      'style="bottom:55%;outline:1px solid black"></div>';
   } else {
     document.getElementById('app').innerHTML =
       '<div id=appedit-code class=main style=right:50%></div>' +
