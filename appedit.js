@@ -61,6 +61,9 @@ function share() {
 
       Share source code editing buttons: fb, twitter, linkedin, ...
 
+# Settings
+
+      Vim-mode disable/enable.
 
 # Distribution
 
