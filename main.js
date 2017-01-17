@@ -119,15 +119,17 @@
 // # Dependencies
 
 var da = require('direape@0.1');
+var reun = require('reun');
 var slice = (a, start, end) => Array.prototype.slice.call(a, start, end);
 
 // # routing
 //
-var route = location.search.slice(1).split('-');
+var route = location.search.slice(1).split('/');
 route[0] = route[0] || 'About';
 
 document.getElementById('topbar'+route[0]).className = 'topbar-active';
 
+function main() {
 ({
   About: (o=>o), 
   Read: read, 
@@ -135,17 +137,44 @@ document.getElementById('topbar'+route[0]).className = 'topbar-active';
   App: app, 
   Share: share
 })[route[0]]();
-
+}
+main();
 document.getElementById('loading').remove();
 
 // # Load/save
 
-if(route[1] === 'github') {
+if(route[1] === 'js' && route[2] === 'github') {
   loadFromGithub();
-}
+} 
+
 function loadFromGithub() {
-  console.log('load-from-github', route);
+  ajax(`https://api.github.com/repos/${route[3]}/${route[4]}/contents/main.js`)
+    .then(o => {
+      localStorage.setItem('github', o);
+      o = JSON.parse(o);
+      localStorage.setItem('appeditContent', atob(o.content));
+      main();
+    });
 }
+function ajax(url, opt) {
+  opt = opt || {};
+  opt.method = opt.method || 'GET';
+  return new Promise(function(resolve, reject) {
+    var xhr = new XMLHttpRequest();
+    xhr.open(opt.method, url);
+    xhr.onreadystatechange = function() {
+      if(xhr.readyState === 4) {
+        if(xhr.responseText) {
+          resolve(xhr.responseText);
+        } else {
+          reject(xhr);
+        }
+      }
+    }
+    xhr.send();
+  });
+}
+
 
 // # Read
 //
@@ -224,6 +253,7 @@ function share() {
 
 // # Editor
 //
+var codemirror;
 function edit() {
   var CodeMirror = require('codemirror/lib/codemirror');
   require('codemirror/addon/runmode/runmode.js');
@@ -239,12 +269,12 @@ function edit() {
     document.getElementById('app').innerHTML =
       '<div id=appedit-code class=main style=top:45%></div>' +
       '<div id=appedit-content class=main ' +
-      'style="bottom:55%;outline:1px solid black"></div>';
+      'style="bottom:55%;outline:1px solid #ddd"></div>';
   } else {
     document.getElementById('app').innerHTML =
       '<div id=appedit-code class=main style=right:50%></div>' +
       '<div id=appedit-content class=main ' +
-      'style="left:50%;outline:1px solid black"></div>';
+      'style="left:50%;outline:1px solid #ddd"></div>';
   }
 
   var codemirrorStyle = {
@@ -253,7 +283,7 @@ function edit() {
     width: '100%', height: '100%'
   };
 
-  if(true || !localStorage.getItem('appeditContent')) {
+  if(!localStorage.getItem('appeditContent')) {
     localStorage.setItem('appeditContent', 
         "//\ # Sample app \n//\n" +
         "// This is a bit of documentation, try 'Read' above. " +
@@ -275,7 +305,6 @@ function edit() {
         "`);" );
   }
 
-  var codemirror;
   function createCodeMirror() {
     codemirror = CodeMirror(
         function(cmElement) {
@@ -326,26 +355,20 @@ newWorker();
 function workerExec(str) {
   workerPid && da
     .call(workerPid, 'reun:run', str, location.href)
-    .then(o =>  console.log('run-result', o));
+    /*.then(o =>  console.log('run-result', o))*/;
 }
 // TODO ping/keepalive
 //
-// # Utility functions
-
-function urlGet(url) {
-  return new Promise(function(resolve, reject) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url);
-    xhr.onreadystatechange = function() {
-      if(xhr.readyState === 4) {
-        if(typeof xhr.responseText === 'string') {
-          resolve(xhr.responseText);
-        } else {
-          reject(xhr);
-        }
-      }
-    }
-    xhr.send();
-  });
+// # Manage code
+function setCode(str) {
+  localStorage.setItem('appeditContent', str);
+  if(codemirror) {
+    codemirror.setValue(str);
+  }
+  if(workerPid) {
+    workerExec(str);
+  }
 }
+
+// # Utility functions
 

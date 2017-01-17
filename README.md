@@ -119,15 +119,17 @@ Versions older than 10 years also fall into the public domain.
 # Dependencies
     
     var da = require('direape@0.1');
+    var reun = require('reun');
     var slice = (a, start, end) => Array.prototype.slice.call(a, start, end);
     
-# UI
+# routing
 
     var route = location.search.slice(1).split('/');
     route[0] = route[0] || 'About';
     
     document.getElementById('topbar'+route[0]).className = 'topbar-active';
     
+    function main() {
     ({
       About: (o=>o), 
       Read: read, 
@@ -135,8 +137,44 @@ Versions older than 10 years also fall into the public domain.
       App: app, 
       Share: share
     })[route[0]]();
-    
+    }
+    main();
     document.getElementById('loading').remove();
+    
+# Load/save
+    
+    if(route[1] === 'js' && route[2] === 'github') {
+      loadFromGithub();
+    } 
+    
+    function loadFromGithub() {
+      ajax(`https://api.github.com/repos/${route[3]}/${route[4]}/contents/main.js`)
+        .then(o => {
+          localStorage.setItem('github', o);
+          o = JSON.parse(o);
+          localStorage.setItem('appeditContent', atob(o.content));
+          main();
+        });
+    }
+    function ajax(url, opt) {
+      opt = opt || {};
+      opt.method = opt.method || 'GET';
+      return new Promise(function(resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.open(opt.method, url);
+        xhr.onreadystatechange = function() {
+          if(xhr.readyState === 4) {
+            if(xhr.responseText) {
+              resolve(xhr.responseText);
+            } else {
+              reject(xhr);
+            }
+          }
+        }
+        xhr.send();
+      });
+    }
+    
     
 # Read
 
@@ -215,6 +253,7 @@ Versions older than 10 years also fall into the public domain.
     
 # Editor
 
+    var codemirror;
     function edit() {
       var CodeMirror = require('codemirror/lib/codemirror');
       require('codemirror/addon/runmode/runmode.js');
@@ -230,12 +269,12 @@ Versions older than 10 years also fall into the public domain.
         document.getElementById('app').innerHTML =
           '<div id=appedit-code class=main style=top:45%></div>' +
           '<div id=appedit-content class=main ' +
-          'style="bottom:55%;outline:1px solid black"></div>';
+          'style="bottom:55%;outline:1px solid #ddd"></div>';
       } else {
         document.getElementById('app').innerHTML =
           '<div id=appedit-code class=main style=right:50%></div>' +
           '<div id=appedit-content class=main ' +
-          'style="left:50%;outline:1px solid black"></div>';
+          'style="left:50%;outline:1px solid #ddd"></div>';
       }
     
       var codemirrorStyle = {
@@ -244,9 +283,9 @@ Versions older than 10 years also fall into the public domain.
         width: '100%', height: '100%'
       };
     
-      if(true || !localStorage.getItem('appeditContent')) {
+      if(!localStorage.getItem('appeditContent')) {
         localStorage.setItem('appeditContent', 
-            "// # Sample app \n//\n" +
+            "//\ # Sample app \n//\n" +
             "// This is a bit of documentation, try 'Read' above. " +
             "Code can be written as semi-literate code, see more here " +
             "<https://en.wikipedia.org/wiki/Literate_programming>\n\n" +
@@ -266,7 +305,6 @@ Versions older than 10 years also fall into the public domain.
             "`);" );
       }
     
-      var codemirror;
       function createCodeMirror() {
         codemirror = CodeMirror(
             function(cmElement) {
@@ -317,6 +355,20 @@ Versions older than 10 years also fall into the public domain.
     function workerExec(str) {
       workerPid && da
         .call(workerPid, 'reun:run', str, location.href)
-        .then(o =>  console.log('run-result', o));
+        /*.then(o =>  console.log('run-result', o))*/;
     }
 TODO ping/keepalive
+
+# Manage code
+    function setCode(str) {
+      localStorage.setItem('appeditContent', str);
+      if(codemirror) {
+        codemirror.setValue(str);
+      }
+      if(workerPid) {
+        workerExec(str);
+      }
+    }
+    
+# Utility functions
+    
