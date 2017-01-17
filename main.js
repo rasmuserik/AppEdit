@@ -175,6 +175,12 @@ function ajax(url, opt) {
   });
 }
 
+function saveToGithub() {
+  console.log('saveToGithub');
+}
+function save() {
+  saveToGithub();
+}
 
 // # Read
 //
@@ -320,7 +326,10 @@ function edit() {
           lineNumbers: true,
           value: localStorage.getItem('appeditContent')
         });
-    codemirror.on('change', function(o) { 
+    codemirror.addKeyMap({
+      'Ctrl-S': save
+    });
+    codemirror.on('changes', function(o) { 
       var content = o.getValue();
       localStorage.setItem("appeditContent", content);
       workerExec(content);
