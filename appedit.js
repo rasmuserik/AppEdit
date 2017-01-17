@@ -132,6 +132,9 @@ function edit() {
         "// This is a bit of documentation, try 'Read' above. " +
         "Code can be written as semi-literate code, see more here " +
         "<https://en.wikipedia.org/wiki/Literate_programming>\n\n" +
+        "module.meta = {\n" +
+        "  name: 'sample-app'\n" +
+        "};\n" +
         "var da = require('direape@0.1');\n" +
         "da.run(da.parent, 'appedit:html',`\n" +
         "<center>\n" +
@@ -194,6 +197,8 @@ function newWorker() {
 }
 newWorker();
 function workerExec(str) {
-  workerPid && da.run(workerPid, 'reun:run', str, location.href);
+  workerPid && da
+    .call(workerPid, 'reun:run', str, location.href)
+    .then(o =>  console.log('run-result', o));
 }
 // TODO ping/keepalive
