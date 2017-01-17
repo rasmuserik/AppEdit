@@ -1,6 +1,6 @@
 // # Dependencies
 
-var da = require('direape');
+var da = require('direape@0.0');
 var slice = (a, start, end) => Array.prototype.slice.call(a, start, end);
 
 // # UI
@@ -125,7 +125,7 @@ function edit() {
 
   if(!localStorage.getItem('appeditContent')) {
     localStorage.setItem('appeditContent', 
-        "var da = require('direape');\n" +
+        "var da = require('direape@0.0');\n" +
         "da.dispatch(da.msg(da.parent, 'appedit:html',`\n" +
         "<center>\n" +
         "  <h1>Change me</h1>\n" +
@@ -182,7 +182,7 @@ function newWorker() {
   }
   da.spawn().then(pid => {
     workerPid = pid;
-    workerExec('require("direape").parent = "' + da.pid + '";');
+    workerExec('require("direape@0.0").parent = "' + da.pid + '";');
     workerExec(localStorage.getItem("appeditContent"));
   });
 }
