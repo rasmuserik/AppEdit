@@ -127,25 +127,27 @@ Versions older than 10 years also fall into the public domain.
     var route = location.search.slice(1).split('/');
     route[0] = route[0] || 'About';
     
-    document.getElementById('topbar'+route[0]).className = 'topbar-active';
-    
     function main() {
-    ({
-      About: (o=>o), 
-      Read: read, 
-      Edit: edit, 
-      App: app, 
-      Share: share
-    })[route[0]]();
+      (({
+        Save: save,
+        Read: read, 
+        Edit: edit, 
+        App: app, 
+        Share: share
+      })[route[0]]||(o=>0))();
     }
-    main();
-    document.getElementById('loading').remove();
+    
+    if(location.hash.startsWith('#muBackendLoginToken=')) {
+      loggedIn();
+    } else if(route[1] === 'js' && route[2] === 'gh') {
+      loadFromGithub();
+    } else {
+      (document.getElementById('topbar'+route[0])||{}).className = 'topbar-active';
+      main();
+      document.getElementById('loading').remove();
+    }
     
 # Load/save
-    
-    if(route[1] === 'js' && route[2] === 'github') {
-      loadFromGithub();
-    } 
     
     function loadFromGithub() {
       ajax(`https://api.github.com/repos/${route[3]}/${route[4]}/contents/main.js`)
@@ -156,26 +158,119 @@ Versions older than 10 years also fall into the public domain.
           main();
         });
     }
+    
+    function saveToGithub() {
+      console.log('saveToGithub');
+      location.href = 'https://mubackend.solsort.com/auth/github?url=' +
+        location.href.replace(/[?#].*/, '') + 
+        '&scope=public_repo';
+      localStorage.setItem('appeditAction', 'save');
+      /* https://developer.github.com/v3/oauth/#scopes */
+    }
+    function save() {
+      saveToGithub();
+    }
+    function log(o) {
+      console.log(o);
+      return o;
+    }
+    function bin2hex(a) {
+      return String.fromCharCode.apply(null, new Uint8Array(a))
+            .replace(/./g, function(s) { 
+              var c = s.charCodeAt(0);
+              return (c >> 4).toString(16) + (c & 15).toString(16)
+            });
+    }
+    function sha1(str) {
+      return crypto.subtle.digest('SHA-1', 
+          new window.TextEncoder('utf-8').encode(str))
+        .then(bin2hex);
+    }
+    
+    function loggedIn() {
+      var ghurl = 'https://api.github.com';
+      var token = location.hash.slice(21);
+      var code = localStorage.getItem('appeditContent');
+      var codeHash;
+      var name = 'tutorial';
+      var project;
+      var dir;
+      var username;
+      ajax('https://mubackend.solsort.com/auth/result/' + token)
+        .then(o => token = o.token)
+        .then(() => ajax('https://api.github.com/user?access_token=' + token))
+        .then(u => { project = u.login + '/' + name })
+        .then(()=> ajax(`https://api.github.com/repos/${project}` +
+              '?access_token=' + token))
+        .then(o => {
+          if(o.message === 'Not Found') {
+            return ajax('https://api.github.com/user/repos' +
+                '?access_token=' + token, { data: {
+                  name: name,
+                  auto_init: true,
+                  gitignore_template: 'Node',
+                  license_template: 'mit'
+                }}).then(() => new Promise((resolve) => 
+                    setTimeout(resolve, 300)));
+          }
+        }
+        )
+        .then(() => sha1(code))
+        .then(sha => codeHash = sha)
+        .then(()=> ajax(`https://api.github.com/repos/${project}/license` +
+              '?access_token=' + token))
+        .then(o => (o.license || {}).spdx_id)
+        .then(license => {
+          if(!['MIT', 'GPL-3.0'].includes(license)) {
+            throw new Error('Invalid license') 
+          }
+        }
+        )
+        .then(() => ajax(
+              `https://api.github.com/repos/${project}/contents` +
+              '?access_token=' + token))
+        .then(files => {
+          var sourceName = name + '.js';
+          var file = files.filter(f => f.name === sourceName)[0] || {};
+          if(file.sha !== codeHash) {
+we need to save the change
+          }
+        })
+        .catch(e => {
+          if(e.constructor === XMLHttpRequest &&
+              e.status === 200) {
+            saveToGithub();
+          }
+          console.log('apierror', e);
+          throw e;
+        });
+    
+      localStorage.setItem('appeditAction', '');
+    }
+    
     function ajax(url, opt) {
       opt = opt || {};
-      opt.method = opt.method || 'GET';
+      opt.method = opt.method || (opt.data ? 'POST' : 'GET');
       return new Promise(function(resolve, reject) {
         var xhr = new XMLHttpRequest();
         xhr.open(opt.method, url);
         xhr.onreadystatechange = function() {
           if(xhr.readyState === 4) {
             if(xhr.responseText) {
-              resolve(xhr.responseText);
+              var result = xhr.responseText;
+              try {
+                result = JSON.parse(xhr.responseText);
+              } catch(e) {
+              }
+              resolve(result);
             } else {
               reject(xhr);
             }
           }
         }
-        xhr.send();
+        xhr.send(opt.data ? JSON.stringify(opt.data) : undefined);
       });
     }
-    
-    
 # Read
 
     function js2markdown(src) {
@@ -320,7 +415,10 @@ Versions older than 10 years also fall into the public domain.
               lineNumbers: true,
               value: localStorage.getItem('appeditContent')
             });
-        codemirror.on('change', function(o) { 
+        codemirror.addKeyMap({
+          'Ctrl-S': save
+        });
+        codemirror.on('changes', function(o) { 
           var content = o.getValue();
           localStorage.setItem("appeditContent", content);
           workerExec(content);
