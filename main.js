@@ -13,63 +13,7 @@
 //
 // You can try it live at https://appedit.solsort.com/.
 //
-//
-// # Roadmap / Backlog
-//
-// ## Milestone 1: make it usable as dev environment for myself
-//
-// - [x] Reun - module for `require()` from `unpkg.com` directly in the browser
-// - [x] DireApe - basic API (only running locally, and nonoptimised) for DIstributed REactive App Environment
-// - AppEdit
-//     - [x] routing based on search-url
-//     - [x] Webworker start
-//     - [ ] webworker keep-live
-//     - [x] About: Initial version of about-text, rendered as html
-//     - [x] Read: convert literate source to markdown, and render
-//     - [x] Edit: codemirror + live execution of code in webworker
-//         - [x] CodeMirror working
-//         - [x] live execution of code in webworker
-//         - [x] VIM mode
-//     - [x] App: run the app in full window
-//     - [ ] Share: save to github, and description of how to deploy as web/npm/app
-// - GitHub
-//     - [x] github login service - mubackend security review / notes
-//     - [x] read source from github
-//     - [ ] write file to github
-//
-// ## Milestone 2:
-//
-// ## Backlog
-//
-// - solsort util library
-// - social media links under share
-// - Better error reporting/handling
-// - Snippet sharing through ipfs (requires server)
-// - editor in VR
-// - simple reactive 3d-rendering library
-// - export of `package.json`, based on current `module.meta.package` content.
-// - security review of event handling, and add policy, - before events connected to cloud.
-// - events to any process, - not just in current browser
-// - sync/restore app-db to disk
-// - only send changes
-// - cross-thread event dispatch through transferables instead of json, for performance.
-// - Share app on social media
-// - default icon.png .travis.yml
-// - Dockerfile, config.xml(for cordova), .eslintrc.js from meta, ...
-// - Markdown support. Toggle between document, and literate code in editor.
-// - Share: persistent url to current code (without login).
-// - ClojureScript, C/C++, and OpenCL support.
-// - Optionally only run edited code on 'play', choose where to run the code (`webworker`, `main thread`, `serviceworker`, `browser-addon`, ...)
-// - LightScript support
-// - only allow export on GPL/MIT-projects
-// - JODOM - Jsonml Objects to DOM - render jsonml/appdb to DOM + dispatch events from dom
-// - JODOM (Rudimentary unoptimised implementation)
-//   - [x] Convert JsonML to DOM
-//   - [ ] `style(name, obj)` css by class
-//   - [ ] auto-append `px` to numeric values
-//   - [ ] `"div.class"` syntax
-//   - [ ] convert `on*` parameters to be emit events
-//   - [ ] support custom elements, ie: './ui.js:toggle' -
+// [Roadmap](https://github.com/solsort/AppEdit/milestones?direction=asc&sort=due_date) and [feedback/suggestions](https://github.com/solsort/AppEdit/issues/new) via github issues.
 //
 // # Dependencies:
 //
