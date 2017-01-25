@@ -118,8 +118,7 @@ function loadFromGithub() {
     .then(o => {
       localStorage.setItem('github', JSON.stringify(o));
       localStorage.setItem('appeditContent', atob(o.content));
-      location.search = location.search.replace(/\/.*/, '') //
-        //main();
+      location.search = location.search.replace(/\/.*/, '');
     });
 }
 
@@ -440,7 +439,9 @@ function loggedIn() {
       var sourceName = name + '.js';
       var file = files.filter(f => f.name === sourceName)[0] || {};
       if(file.sha !== codeHash) {
+
         // we need to save the change
+
       }
     })
   .catch(e => {
@@ -598,6 +599,7 @@ try {
 //     - Personal - for non-commercial projects only, allows you to export to private github projects, and with config.xml for phonegap build. Includes infrastructure non-GPL-license.
 //     - Professional - for commercial projects, includes infrastructure non-GPL-license.
 //   - Maybe 50% subscription fee back to community/growth: bug bounties, (recursive) referral (for example identify via coupon for first month free, limit such as 100), competition-prices, contributor-prizes, ...
+//
 // # License
 //
 // This software is copyrighted solsort.com ApS, and available under GPLv3, as well as proprietary license upon request.
