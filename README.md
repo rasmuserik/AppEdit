@@ -283,9 +283,17 @@ we need to save the change
     
     try {
       console.log('makeFiles');
-    console.log(self.xxx = makeFiles(localStorage.getItem('appeditContent'),
-          JSON.parse(localStorage.getItem('appeditMeta'))[0]));
+      sha1files(
+      makeFiles(localStorage.getItem('appeditContent'),
+          JSON.parse(localStorage.getItem('appeditMeta'))[0]))
+        .then(o => console.log('makeFiles-sha', o));
     } catch(e) {
+    }
+    function sha1Files(files) {
+      return Promise.all(
+          files.map(o => new Promise((reject, resolve) =>
+              sha1(o.content).then(sha =>
+                resolve(Object.assign(o, {sha: sha}))))));
     }
     
     function makeFiles(source, meta) {
@@ -309,7 +317,8 @@ we need to save the change
           name: 'package.json',
           content: JSON.stringify(Object.assign({
             name: meta.id,
-            version: meta.version
+            version: meta.version,
+            description: (meta.title || '') + (meta.description || '')
           }, meta.npm), null, 4)
         });
       }

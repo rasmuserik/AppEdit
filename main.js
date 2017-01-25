@@ -283,9 +283,17 @@ function ajax(url, opt) {
 
 try {
   console.log('makeFiles');
-console.log(self.xxx = makeFiles(localStorage.getItem('appeditContent'),
-      JSON.parse(localStorage.getItem('appeditMeta'))[0]));
+  sha1files(
+  makeFiles(localStorage.getItem('appeditContent'),
+      JSON.parse(localStorage.getItem('appeditMeta'))[0]))
+    .then(o => console.log('makeFiles-sha', o));
 } catch(e) {
+}
+function sha1files(files) {
+  return Promise.all(
+      files.map(o => new Promise((resolve, reject) =>
+          sha1(o.content).then(sha =>
+            resolve(Object.assign(o, {sha: sha}))))));
 }
 
 function makeFiles(source, meta) {
