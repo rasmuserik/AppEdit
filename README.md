@@ -60,7 +60,7 @@ You can try it live at https://appedit.solsort.com/.
     }
     
     function loadFromGithub() {
-      ajax(`https://api.github.com/repos/${route[3]}/${route[4]}/contents/main.js`)
+      ajax(`https://api.github.com/repos/${route[3]}/${route[4]}/contents/${route[4]}.js`)
         .then(o => {
           localStorage.setItem('github', JSON.stringify(o));
           localStorage.setItem('appeditContent', atob(o.content));
@@ -148,7 +148,10 @@ You can try it live at https://appedit.solsort.com/.
               value: localStorage.getItem('appeditContent')
             });
         codemirror.addKeyMap({
-          'Ctrl-S': save
+          'Ctrl-S': () => {
+            localStorage.setItem('appeditAfterSave', 'Edit');
+            location.search = '?Save';
+          }
         });
         codemirror.on('changes', function(o) {
           var content = o.getValue();
@@ -322,7 +325,6 @@ It is useful to have the sha-1 of the files, when uploading to github, as we can
     
     
     function saveToGithub() {
-      console.log('saveToGithub');
       location.href = 'https://mubackend.solsort.com/auth/github?url=' +
         location.href.replace(/[?#].*/, '') +
         '&scope=public_repo';
@@ -337,24 +339,26 @@ It is useful to have the sha-1 of the files, when uploading to github, as we can
       var ghurl = 'https://api.github.com';
       var token = location.hash.slice(21);
       var code = localStorage.getItem('appeditContent');
-      var meta = localStorage.getItem('appeditMeta');
-      var files = [];
+      var meta = JSON.parse(localStorage.getItem('appeditMeta'))[0];
       var username = '';
       var codeHash;
-      var name = 'tutorial';
+      var name = meta.id;
       var project;
       var dir;
+      var localFiles;
       ajax('https://mubackend.solsort.com/auth/result/' + token)
-        .then(o => token = o.token)
-        .then(() => ajax('https://api.github.com/user?access_token=' + token))
-        .then(u => {
+        .then(o => {
+          token = o.token;
+          return ajax('https://api.github.com/user?access_token=' + token);
+        }).then(u => {
           project = u.login + '/' + name;
           meta.githubUser = u.login;
-          files = makeFiles(code, meta)
-            ;})
-        .then(()=> ajax(`https://api.github.com/repos/${project}` +
-              '?access_token=' + token))
-        .then(o => {
+          return sha1files(makeFiles(code, meta));
+        }).then(files => {
+          localFiles = files;
+          return ajax('https://api.github.com/repos/' + project +
+              '?access_token=' + token);
+        }).then(o => {
           if(o.message === 'Not Found') {
             return ajax('https://api.github.com/user/repos' +
                 '?access_token=' + token, { data: {
@@ -365,31 +369,44 @@ It is useful to have the sha-1 of the files, when uploading to github, as we can
                 }}).then(() => new Promise((resolve) =>
                     setTimeout(resolve, 300)));
           }
-        }
-        )
-        .then(() => sha1(code))
-        .then(sha => codeHash = sha)
-        .then(()=> ajax(`https://api.github.com/repos/${project}/license` +
-              '?access_token=' + token))
-        .then(o => (o.license || {}).spdx_id)
-        .then(license => {
+        }).then(() => {
+          return ajax(`https://api.github.com/repos/${project}/license` +
+              '?access_token=' + token);
+    
+        }).then(o => {
+          var license = (o.license || {}).spdx_id;
           if(!['MIT', 'GPL-3.0'].includes(license)) {
             throw new Error('Invalid license')
           }
-        }
-        )
-        .then(() => ajax(
-              `https://api.github.com/repos/${project}/contents` +
-              '?access_token=' + token))
-        .then(files => {
-          var sourceName = name + '.js';
-          var file = files.filter(f => f.name === sourceName)[0] || {};
-          if(file.sha !== codeHash) {
-    
-we need to save the change
-    
+          return ajax(`https://api.github.com/repos/${project}/contents` +
+              '?access_token=' + token)
+        }).then(ghFiles => {
+          console.log('here');
+          var ghShas = {};
+          for(var i = 0; i < ghFiles.length; ++i) {
+            ghShas[ghFiles[i].name]  = ghFiles[i].sha;
           }
-        })
+          var result = Promise.resolve();
+          localFiles.map(f => {
+            var ghSha = ghShas[f.name];
+            if(ghSha === f.sha) {
+              return;
+            }
+            var message = {
+              path: f.name,
+              content: btoa(f.content),
+              message: `Commit ${f.name} via https://appedit.solsort.com/?Edit/js/gh/${project}.`
+            }
+            if(ghSha) {
+              message.sha = ghSha;
+            }
+            var url = `https://api.github.com/repos/${project}/contents/${f.name}` +
+              '?access_token=' + token;
+            result = result.then(() => ajax(url, {method: 'PUT', data: message}));
+          });
+          return result;
+        }).then(() => location.href =
+          location.href.replace(/[?#].*/, '?' + localStorage.getItem('appeditAfterSave') || ""))
       .catch(e => {
         if(e.constructor === XMLHttpRequest &&
             e.status === 200) {
@@ -516,15 +533,6 @@ TODO ping/keepalive
     }
     
 # Code for experimenting
-    
-    try {
-      console.log('makeFiles');
-      sha1files(
-          makeFiles(localStorage.getItem('appeditContent'),
-            JSON.parse(localStorage.getItem('appeditMeta'))[0]))
-        .then(o => console.log('makeFiles-sha', o));
-    } catch(e) {
-    }
     
 # Non-code Roadmap.
 
