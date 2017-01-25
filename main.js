@@ -120,6 +120,7 @@
 
 var da = require('direape@0.1');
 var reun = require('reun');
+var showdown = require('showdown@1.6.0')
 var slice = (a, start, end) => Array.prototype.slice.call(a, start, end);
 
 // # routing
@@ -152,10 +153,10 @@ if(location.hash.startsWith('#muBackendLoginToken=')) {
 function loadFromGithub() {
   ajax(`https://api.github.com/repos/${route[3]}/${route[4]}/contents/main.js`)
     .then(o => {
-      localStorage.setItem('github', o);
-      o = JSON.parse(o);
+      localStorage.setItem('github', JSON.stringify(o));
       localStorage.setItem('appeditContent', atob(o.content));
-      main();
+      location.search = location.search.replace(/\/.*/, '') //
+      //main();
     });
 }
 
@@ -191,15 +192,21 @@ function loggedIn() {
   var ghurl = 'https://api.github.com';
   var token = location.hash.slice(21);
   var code = localStorage.getItem('appeditContent');
+  var meta = localStorage.getItem('appeditMeta');
+  var files = [];
+  var username = '';
   var codeHash;
   var name = 'tutorial';
   var project;
   var dir;
-  var username;
   ajax('https://mubackend.solsort.com/auth/result/' + token)
     .then(o => token = o.token)
     .then(() => ajax('https://api.github.com/user?access_token=' + token))
-    .then(u => { project = u.login + '/' + name })
+    .then(u => { 
+      project = u.login + '/' + name;
+      meta.githubUser = u.login;
+      files = makeFiles(code, meta)
+        ;})
     .then(()=> ajax(`https://api.github.com/repos/${project}` +
           '?access_token=' + token))
     .then(o => {
@@ -236,14 +243,14 @@ function loggedIn() {
         // we need to save the change
       }
     })
-    .catch(e => {
-      if(e.constructor === XMLHttpRequest &&
-          e.status === 200) {
-        saveToGithub();
-      }
-      console.log('apierror', e);
-      throw e;
-    });
+  .catch(e => {
+    if(e.constructor === XMLHttpRequest &&
+        e.status === 200) {
+      saveToGithub();
+    }
+    console.log('apierror', e);
+    throw e;
+  });
 
   localStorage.setItem('appeditAction', '');
 }
@@ -271,13 +278,98 @@ function ajax(url, opt) {
     xhr.send(opt.data ? JSON.stringify(opt.data) : undefined);
   });
 }
+
+// # Generate files for export
+
+try {
+  console.log('makeFiles');
+console.log(self.xxx = makeFiles(localStorage.getItem('appeditContent'),
+      JSON.parse(localStorage.getItem('appeditMeta'))[0]));
+} catch(e) {
+}
+
+function makeFiles(source, meta) {
+  var files = [];
+  files.push({
+    name: meta.id + '.js',
+    content: source
+  });
+  if(!meta.customIndex) {
+  files.push({
+    name: 'index.html',
+    content: makeIndexHtml(source, meta)
+  });
+  }
+  files.push({
+    name: 'README.md',
+    content: makeReadmeMd(source, meta)
+  });
+  if(meta.npm) {
+    files.push({
+      name: 'package.json',
+      content: JSON.stringify(Object.assign({
+        name: meta.id,
+        version: meta.version,
+        description: (meta.title || '') + (meta.description || '')
+      }, meta.npm), null, 4)
+    });
+  }
+  return files;
+}
+function makeIndexHtml(source, meta) {
+  return `<!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="utf-8">
+    <title>${meta.title}</title>
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <link rel=icon href=icon.png>
+    <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet"> 
+    <body>
+    <div id=app>
+    ${meta.splash ? 
+      '<img src=' + meta.splash + ' width=100% height=100%>' :
+        markdown2html(makeReadmeMd(source, meta))}
+  </div>
+    <script src=https://unpkg.com/reun></script>
+    <script>document.write('<script src="//incoming.solsort.com/log.js?' + location.protocol + '//' + location.host + location.pathname + location.search + '" async></s' + 'cript>');</script>
+    <script>setTimeout(()=>reun.require('./${meta.id}.js'),0);</script>
+    </body>
+    `
+}
+function makeReadmeMd(source, meta) {
+  var user = meta.githubUser;
+  var id = meta.id;
+  var project = user + '/' + id;
+  var s = `<img src=https://raw.githubusercontent.com/${project}/master/icon.png width=96 height=96 align=right>\n\n`;
+  if(meta.url) {
+    s+= '[![website](https://img.shields.io/badge/website-' +
+        meta.url.replace(/.*[/][/]/, '').replace(/[/].*/, '') +
+        `-blue.svg)](${meta.url})\n`;
+  }
+  s += `[![github](https://img.shields.io/badge/github-${project}-blue.svg)](https://github.com/${project})\n`;
+  s+= `[![codeclimate](https://img.shields.io/codeclimate/github/${project}.svg)](https://codeclimate.com/github/${project})\n`;
+  if(meta.travis) {
+    s += `[![travis](https://img.shields.io/travis/${project}.svg)](https://travis-ci.org/${project})\n`;
+  }
+  if(meta.npm) {
+    s += `[![npm](https://img.shields.io/npm/v/${id}.svg)](https://www.npmjs.com/package/${id})\n`;
+  }
+  s += js2markdown(source);
+  return s;
+}
+
 // # Read
 //
 function js2markdown(src) {
   return ('\n'+src).replace(/\n/g, '\n    ').replace(/\n *[/][/] ?/g, '\n');
 }
 function markdown2html(markdown) {
-  return (new (require('showdown@1.6.0')).Converter()).makeHtml(markdown);
+  return (new showdown.Converter()).makeHtml(markdown);
 }
 function read() {
   var code = localStorage.getItem('appeditContent');
@@ -385,7 +477,9 @@ function edit() {
         "Code can be written as semi-literate code, see more here " +
         "<https://en.wikipedia.org/wiki/Literate_programming>\n\n" +
         "module.meta = {\n" +
-        "  name: 'sample-app'\n" +
+        "  id: 'sample-app',\n" +
+        "  name: 'Sample Application',\n" +
+        "  version: '0.0.1'\n" +
         "};\n" +
         "var da = require('direape@0.1');\n" +
         "da.run(da.parent, 'appedit:html',`\n" +
@@ -397,6 +491,7 @@ function edit() {
         "  (vi keybindings is enabled,<br>\n" +
         "  so press <tt>i</tt> to insert)\n" +
         "</center>\n" +
+        "${Object.keys(require('lodash')).join('<br>')}\n" +
         "`);" );
   }
 
@@ -420,8 +515,7 @@ function edit() {
     });
     codemirror.on('changes', function(o) { 
       var content = o.getValue();
-      localStorage.setItem("appeditContent", content);
-      workerExec(content);
+      runSaveCode(content);
     });
   }
 
@@ -446,27 +540,49 @@ function newWorker() {
   }
   da.spawn().then(pid => {
     workerPid = pid;
-    workerExec(localStorage.getItem("appeditContent"));
+    runSaveCode(localStorage.getItem("appeditContent"));
   });
 }
 newWorker();
 function workerExec(str) {
-  workerPid && da
-    .call(workerPid, 'reun:run', str, location.href)
-    /*.then(o =>  console.log('run-result', o))*/;
+  return new Promise((resolve, reject) =>
+      workerPid ? da
+      .call(workerPid, 'reun:run', str, location.href)
+      .then(o => o ? resolve(o) : reject(o))
+      : reject(null)
+      )
 }
 // TODO ping/keepalive
 //
 // # Manage code
-function setCode(str) {
+//
+function runSaveCode(str) {
   localStorage.setItem('appeditContent', str);
+  workerExec(str).then(o => {
+    localStorage.setItem('appeditMeta', JSON.stringify([o && metaValues(o)]));
+  });
+}
+function setCode(str) {
+  runSaveCode(str);
   if(codemirror) {
     codemirror.setValue(str);
   }
-  if(workerPid) {
-    workerExec(str);
-  }
 }
 
-// # Utility functions
+// ## Code export
 
+function metaValues(o) {
+  var meta = o.meta || {};
+  if(!meta.id && !meta.title) {
+    meta = Object.assign({title: 'Unnamed solsort.com app'}, meta);
+  }
+  meta = Object.assign({
+    id: (meta.title|| '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '-')
+      .replace(/-+/g, '-'),
+    title: meta.id,
+    version: '0.0.0'
+  }, meta);
+  return meta;
+}
