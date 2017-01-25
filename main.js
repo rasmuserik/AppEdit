@@ -54,6 +54,8 @@
 // - only send changes
 // - cross-thread event dispatch through transferables instead of json, for performance.
 // - Share app on social media
+// - default icon.png .travis.yml
+// - Dockerfile, config.xml(for cordova), .eslintrc.js from meta, ...
 // - Markdown support. Toggle between document, and literate code in editor.
 // - Share: persistent url to current code (without login).
 // - ClojureScript, C/C++, and OpenCL support.
