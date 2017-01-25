@@ -1,38 +1,38 @@
 // <img src=https://AppEdit.solsort.com/icon.png width=96 height=96 align=right>
 //
-// [![website](https://img.shields.io/badge/website-AppEdit.solsort.com-blue.svg)](https://AppEdit.solsort.com/) 
+// [![website](https://img.shields.io/badge/website-AppEdit.solsort.com-blue.svg)](https://AppEdit.solsort.com/)
 // [![github](https://img.shields.io/badge/github-solsort/AppEdit-blue.svg)](https://github.com/solsort/AppEdit)
 // [![codeclimate](https://img.shields.io/codeclimate/github/solsort/AppEdit.svg)](https://codeclimate.com/github/solsort/AppEdit)
 // [![travis](https://img.shields.io/travis/solsort/AppEdit.svg)](https://travis-ci.org/solsort/AppEdit)
 //
 // # AppEdit
-// 
+//
 // This is a code editor, where the edited code is executed live in a web worker. It is intended for teaching, and quickly making small HTML5/App prototypes.
-// 
+//
 //     TODO: animated gif example here.
-// 
+//
 // You can try it live at https://appedit.solsort.com/.
-// 
+//
 // Features:
-// 
+//
 // - Code editing with live execution in WebWorker
-// 
-// 
+//
+//
 // ## Parts/modules
-// 
+//
 // The code is / will become split up in different parts:
-// 
+//
 // - [REUN](https://reun.solsort.com) - require/module-loader through unpkg
 // - [DireApe](https://direape.solsort.com) - Distributed Reactive App Environment - message passing + state + handle child processes
 // - AppEdit - The application itself
 // - GitHub-import/export (requires light server)
-// 
+//
 // ## Roadmap / intended features
-// 
+//
 // ### Milestone 1: make it usable as dev environment for myself
-// 
-// - [x] Reun 
-// - [x] DireApe 
+//
+// - [x] Reun
+// - [x] DireApe
 // - AppEdit
 //   - [ ] routing based on search-url
 //   - [x] Webworker start
@@ -45,17 +45,17 @@
 //     - [x] VIM mode
 //   - [x] App: run the app in full window
 //   - [ ] Share: settings + save to github
-//     - [ ] choose whether to use 
+//     - [ ] choose whether to use
 // - [ ] solsort batteries included util library
 //   - [ ] move jodom utilities into library
 //   - [ ] add functionality as needed
-// - GitHub 
+// - GitHub
 //   - [ ] github login service - mubackend security review / notes
 //   - [ ] read source from github
 //   - [ ] write file to github
-// 
+//
 // ### Maybe Later
-// 
+//
 // - Better error reporting/handling
 // - Snippet sharing through ipfs (requires server)
 // - editor in VR
@@ -80,25 +80,25 @@
 //   - [ ] auto-append `px` to numeric values
 //   - [ ] `"div.class"` syntax
 //   - [ ] convert `on*` parameters to be emit events
-//   - [ ] support custom elements, ie: './ui.js:toggle' - 
-// 
+//   - [ ] support custom elements, ie: './ui.js:toggle' -
+//
 // ## Application design
-// 
+//
 // - About - information about project, getting started, examples, pricing, ... github-issues for project.
 // - Read - document rendered from literate source code for the current app
 // - Edit - live editing of code
 // - App - run the current app
 // - Share(+settings) - buttons to share the current app on social media etc.
 // - (Login)
-// 
+//
 // ## License
-// 
+//
 // This software is copyrighted solsort.com ApS, and available under GPLv3, as well as proprietary license upon request.
-// 
+//
 // Versions older than 10 years also fall into the public domain.
-// 
+//
 // ## Non-code Roadmap.
-// 
+//
 // - Growth
 //   - Workshops
 //     - HTML5/App development (non-technical: personal network, coworking spaces)
@@ -131,9 +131,9 @@ route[0] = route[0] || 'About';
 function main() {
   (({
     Save: save,
-    Read: read, 
-    Edit: edit, 
-    App: app, 
+    Read: read,
+    Edit: edit,
+    App: app,
     Share: share
   })[route[0]]||(o=>0))();
 }
@@ -156,14 +156,14 @@ function loadFromGithub() {
       localStorage.setItem('github', JSON.stringify(o));
       localStorage.setItem('appeditContent', atob(o.content));
       location.search = location.search.replace(/\/.*/, '') //
-      //main();
+        //main();
     });
 }
 
 function saveToGithub() {
   console.log('saveToGithub');
   location.href = 'https://mubackend.solsort.com/auth/github?url=' +
-    location.href.replace(/[?#].*/, '') + 
+    location.href.replace(/[?#].*/, '') +
     '&scope=public_repo';
   localStorage.setItem('appeditAction', 'save');
   /* https://developer.github.com/v3/oauth/#scopes */
@@ -177,13 +177,13 @@ function log(o) {
 }
 function bin2hex(a) {
   return String.fromCharCode.apply(null, new Uint8Array(a))
-        .replace(/./g, function(s) { 
-          var c = s.charCodeAt(0);
-          return (c >> 4).toString(16) + (c & 15).toString(16)
-        });
+    .replace(/./g, function(s) {
+      var c = s.charCodeAt(0);
+      return (c >> 4).toString(16) + (c & 15).toString(16)
+    });
 }
 function sha1(str) {
-  return crypto.subtle.digest('SHA-1', 
+  return crypto.subtle.digest('SHA-1',
       new window.TextEncoder('utf-8').encode(str))
     .then(bin2hex);
 }
@@ -202,7 +202,7 @@ function loggedIn() {
   ajax('https://mubackend.solsort.com/auth/result/' + token)
     .then(o => token = o.token)
     .then(() => ajax('https://api.github.com/user?access_token=' + token))
-    .then(u => { 
+    .then(u => {
       project = u.login + '/' + name;
       meta.githubUser = u.login;
       files = makeFiles(code, meta)
@@ -217,7 +217,7 @@ function loggedIn() {
               auto_init: true,
               gitignore_template: 'Node',
               license_template: 'mit'
-            }}).then(() => new Promise((resolve) => 
+            }}).then(() => new Promise((resolve) =>
                 setTimeout(resolve, 300)));
       }
     }
@@ -229,7 +229,7 @@ function loggedIn() {
     .then(o => (o.license || {}).spdx_id)
     .then(license => {
       if(!['MIT', 'GPL-3.0'].includes(license)) {
-        throw new Error('Invalid license') 
+        throw new Error('Invalid license')
       }
     }
     )
@@ -284,8 +284,8 @@ function ajax(url, opt) {
 try {
   console.log('makeFiles');
   sha1files(
-  makeFiles(localStorage.getItem('appeditContent'),
-      JSON.parse(localStorage.getItem('appeditMeta'))[0]))
+      makeFiles(localStorage.getItem('appeditContent'),
+        JSON.parse(localStorage.getItem('appeditMeta'))[0]))
     .then(o => console.log('makeFiles-sha', o));
 } catch(e) {
 }
@@ -303,10 +303,10 @@ function makeFiles(source, meta) {
     content: source
   });
   if(!meta.customIndex) {
-  files.push({
-    name: 'index.html',
-    content: makeIndexHtml(source, meta)
-  });
+    files.push({
+      name: 'index.html',
+      content: makeIndexHtml(source, meta)
+    });
   }
   files.push({
     name: 'README.md',
@@ -336,10 +336,10 @@ function makeIndexHtml(source, meta) {
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <link rel=icon href=icon.png>
-    <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet"> 
+    <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
     <body>
     <div id=app>
-    ${meta.splash ? 
+    ${meta.splash ?
       '<img src=' + meta.splash + ' width=100% height=100%>' :
         markdown2html(makeReadmeMd(source, meta))}
   </div>
@@ -389,7 +389,7 @@ function read() {
 function app() {
   document.getElementById('app').innerHTML = 'Starting app...';
   da.handle('appedit:html', (html) => {
-    document.getElementById('app').innerHTML = 
+    document.getElementById('app').innerHTML =
       '<div id=appedit-content class=main></div>';
     document.getElementById('appedit-content').innerHTML = html;
   });
@@ -400,7 +400,7 @@ function app() {
 function share() {
   document.getElementById('app').innerHTML = markdown2html(`
 
-# Share 
+# Share
 
       _not implemented yet, will contain the following:_
 
@@ -479,7 +479,7 @@ function edit() {
   };
 
   if(!localStorage.getItem('appeditContent')) {
-    localStorage.setItem('appeditContent', 
+    localStorage.setItem('appeditContent',
         "//\ # Sample app \n//\n" +
         "// This is a bit of documentation, try 'Read' above. " +
         "Code can be written as semi-literate code, see more here " +
@@ -521,7 +521,7 @@ function edit() {
     codemirror.addKeyMap({
       'Ctrl-S': save
     });
-    codemirror.on('changes', function(o) { 
+    codemirror.on('changes', function(o) {
       var content = o.getValue();
       runSaveCode(content);
     });
