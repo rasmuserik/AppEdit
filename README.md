@@ -97,10 +97,12 @@ You can try it live at https://appedit.solsort.com/.
     function edit() {
       loadCss('//unpkg.com/codemirror/lib/codemirror.css');
       loadCss('//unpkg.com/codemirror/addon/lint/lint.css');
+      loadCss('//unpkg.com/codemirror/addon/fold/foldgutter.css');
       var CodeMirror = require('codemirror/lib/codemirror');
       require('codemirror/addon/runmode/runmode.js');
       require('codemirror/addon/runmode/colorize.js');
       require('codemirror/addon/fold/foldcode.js');
+      require('codemirror/addon/fold/foldgutter.js');
       require('codemirror/addon/fold/brace-fold.js');
       require('codemirror/addon/fold/markdown-fold.js');
       require('codemirror/addon/lint/lint.js');
@@ -162,20 +164,22 @@ You can try it live at https://appedit.solsort.com/.
             },
             {
               mode: 'javascript',
-              extraKeys: {"Ctrl-Q": function(cm){ cm.foldCode(cm.getCursor()); }},
+              extraKeys: {
+                'Ctrl-S': () => {
+                  localStorage.setItem('appeditAfterSave', 'Edit');
+                  location.search = '?Save';
+                },
+                "Ctrl-Q": (cm) => cm.foldCode(cm.getCursor())
+              },
               lineWrapping: true,
               keyMap: 'vim',
               lineNumbers: true,
-              gutters: ["CodeMirror-lint-markers"],
+              foldGutter: true,
+              gutters: ['CodeMirror-lint-markers', 'CodeMirror-linenumbers', 
+              'CodeMirror-foldgutter'],
               lint: {esversion: 6},
               value: localStorage.getItem('appeditContent')
             });
-        codemirror.addKeyMap({
-          'Ctrl-S': () => {
-            localStorage.setItem('appeditAfterSave', 'Edit');
-            location.search = '?Save';
-          }
-        });
         codemirror.on('changes', function(o) {
           var content = o.getValue();
           runSaveCode(content);
