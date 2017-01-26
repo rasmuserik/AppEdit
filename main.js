@@ -80,17 +80,35 @@ function read() {
 
 // # Edit
 //
+function loadCss(url) {
+  var id = url.toLowerCase().replace(/[^a-z0-9]/g,'');
+  var elem;
+  if(!document.getElementById(id)) {
+    elem = document.createElement('link');
+    elem.rel = 'stylesheet';
+    elem.id = id;
+    elem.href = url;
+    document.head.appendChild(elem);
+  }
+}
+self.loadcss = loadCss;
+
 var codemirror;
 function edit() {
+  loadCss('//unpkg.com/codemirror/lib/codemirror.css');
+  loadCss('//unpkg.com/codemirror/addon/lint/lint.css');
   var CodeMirror = require('codemirror/lib/codemirror');
   require('codemirror/addon/runmode/runmode.js');
   require('codemirror/addon/runmode/colorize.js');
   require('codemirror/addon/fold/foldcode.js');
   require('codemirror/addon/fold/brace-fold.js');
   require('codemirror/addon/fold/markdown-fold.js');
+  require('codemirror/addon/lint/lint.js');
+  require('codemirror/addon/lint/javascript-lint.js');
   require('codemirror/keymap/vim.js');
   require('codemirror/mode/javascript/javascript.js');
   require('codemirror/mode/markdown/markdown.js');
+  self.JSHINT = require('jshint/dist/jshint.js').JSHINT;
 
   if(window.innerWidth <= 1000) {
     document.getElementById('app').innerHTML =
@@ -148,6 +166,8 @@ function edit() {
           lineWrapping: true,
           keyMap: 'vim',
           lineNumbers: true,
+          gutters: ["CodeMirror-lint-markers"],
+          lint: {esversion: 6},
           value: localStorage.getItem('appeditContent')
         });
     codemirror.addKeyMap({
@@ -167,6 +187,34 @@ function edit() {
   });
   setTimeout(createCodeMirror, 0);
   window.onresize = edit;
+
+  var codemirrorHints = [];
+
+  function updateHints() {
+    codemirror.operation(function(){
+      for (var i = 0; i < codemirrorHints.length; ++i)
+        codemirror.removeLineWidget(codemirrorHints[i]);
+      codemirrorHints.length = 0;
+
+      JSHINT(codemirror.getValue());
+      for (var i = 0; i < JSHINT.errors.length; ++i) {
+        var err = JSHINT.errors[i];
+        if (!err) continue;
+        var msg = document.createElement("div");
+        var icon = msg.appendChild(document.createElement("span"));
+        icon.innerHTML = "!!";
+        icon.className = "lint-error-icon";
+        msg.appendChild(document.createTextNode(err.reason));
+        msg.className = "lint-error";
+        codemirrorHints.push(codemirror.addLineWidget(err.line - 1, msg, {coverGutter: false, noHScroll: true}));
+      }
+    });
+    var info = codemirror.getScrollInfo();
+    var after = codemirror.charCoords({line: codemirror.getCursor().line + 1, ch: 0}, "local").top;
+    if (info.top + info.clientHeight < after)
+      codemirror.scrollTo(null, after - info.clientHeight + 3);
+  }
+  self.updateHints = updateHints;
 }
 
 // # App
@@ -410,16 +458,16 @@ function loggedIn() {
       return result;
     }).then(() => location.href =
       location.href.replace(/[?#].*/, '?' + localStorage.getItem('appeditAfterSave') || ""))
-  .catch(e => {
-    if(e.constructor === XMLHttpRequest &&
-        e.status === 200) {
-      saveToGithub();
-    }
-    console.log('apierror', e);
-    throw e;
-  });
+      .catch(e => {
+        if(e.constructor === XMLHttpRequest &&
+            e.status === 200) {
+          saveToGithub();
+        }
+        console.log('apierror', e);
+        throw e;
+      });
 
-  localStorage.setItem('appeditAction', '');
+    localStorage.setItem('appeditAction', '');
 }
 
 function ajax(url, opt) {
