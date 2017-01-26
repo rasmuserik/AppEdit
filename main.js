@@ -187,34 +187,6 @@ function edit() {
   });
   setTimeout(createCodeMirror, 0);
   window.onresize = edit;
-
-  var codemirrorHints = [];
-
-  function updateHints() {
-    codemirror.operation(function(){
-      for (var i = 0; i < codemirrorHints.length; ++i)
-        codemirror.removeLineWidget(codemirrorHints[i]);
-      codemirrorHints.length = 0;
-
-      JSHINT(codemirror.getValue());
-      for (var i = 0; i < JSHINT.errors.length; ++i) {
-        var err = JSHINT.errors[i];
-        if (!err) continue;
-        var msg = document.createElement("div");
-        var icon = msg.appendChild(document.createElement("span"));
-        icon.innerHTML = "!!";
-        icon.className = "lint-error-icon";
-        msg.appendChild(document.createTextNode(err.reason));
-        msg.className = "lint-error";
-        codemirrorHints.push(codemirror.addLineWidget(err.line - 1, msg, {coverGutter: false, noHScroll: true}));
-      }
-    });
-    var info = codemirror.getScrollInfo();
-    var after = codemirror.charCoords({line: codemirror.getCursor().line + 1, ch: 0}, "local").top;
-    if (info.top + info.clientHeight < after)
-      codemirror.scrollTo(null, after - info.clientHeight + 3);
-  }
-  self.updateHints = updateHints;
 }
 
 // # App
