@@ -103,14 +103,37 @@ You can try it live at https://appedit.solsort.com/.
       require('codemirror/addon/runmode/colorize.js');
       require('codemirror/addon/fold/foldcode.js');
       require('codemirror/addon/fold/foldgutter.js');
-      require('codemirror/addon/fold/brace-fold.js');
-      require('codemirror/addon/fold/markdown-fold.js');
       require('codemirror/addon/lint/lint.js');
       require('codemirror/addon/lint/javascript-lint.js');
       require('codemirror/keymap/vim.js');
       require('codemirror/mode/javascript/javascript.js');
-      require('codemirror/mode/markdown/markdown.js');
       self.JSHINT = require('jshint/dist/jshint.js').JSHINT;
+    
+      /* TODO: refactor: javascript-mode should have configurable fold-method, 
+       * and this shouldn't be called 'brace' */
+      CodeMirror.registerHelper('fold', 'brace', function(cm, start) {
+        var level, end, maxDepth = 100, firstLine = cm.getLine(start.line), lastLine = cm.lastLine();
+    
+        function headerLevel(line) {
+          if (!line) return maxDepth;
+          var match = line.match(/[/][/] #+/);
+          return match ? match[0].length - 3 : maxDepth
+        }
+    
+        level = headerLevel(firstLine);
+        if (level === maxDepth) return undefined;
+    
+        for (end = start.line + 1; end < lastLine; ++end) {
+          if (headerLevel(cm.getLine(end + 1)) <= level) {
+            break;
+          }
+        }
+    
+        return {
+          from: CodeMirror.Pos(start.line, cm.getLine(start.line).length),
+          to: CodeMirror.Pos(end, cm.getLine(end).length)
+        };
+      });
     
       if(window.innerWidth <= 1000) {
         document.getElementById('app').innerHTML =
@@ -185,12 +208,15 @@ You can try it live at https://appedit.solsort.com/.
           runSaveCode(content);
         });
       }
+      window.CodeMirror = CodeMirror;
     
       da.handle('appedit:html', (html) => {
         document.getElementById('appedit-content').innerHTML = html;
       });
       setTimeout(createCodeMirror, 0);
       window.onresize = edit;
+    
+    
     }
     
 # App
