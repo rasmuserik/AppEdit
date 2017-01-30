@@ -420,7 +420,7 @@ function loggedIn() {
               gitignore_template: 'Node',
               license_template: 'mit'
             }}).then(() => new Promise((resolve) =>
-                setTimeout(resolve, 300)));
+                setTimeout(resolve, 1000)));
       }
     }).then(() => {
       return ajax(`https://api.github.com/repos/${project}/license` +
