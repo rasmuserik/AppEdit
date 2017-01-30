@@ -32,6 +32,7 @@ You can try it live at https://appedit.solsort.com/.
     
     
     var da = require('direape@0.1');
+    var ss = require('solsort@0.1');
     var reun = require('reun');
     var showdown = require('showdown@1.6.0')
     var slice = (a, start, end) => Array.prototype.slice.call(a, start, end);
@@ -138,12 +139,12 @@ You can try it live at https://appedit.solsort.com/.
       if(window.innerWidth <= 1000) {
         document.getElementById('app').innerHTML =
           '<div id=appedit-code class=main style=top:45%></div>' +
-          '<div id=appedit-content class=main ' +
+          '<div id=solsort-ui class=main ' +
           'style="bottom:55%;outline:1px solid #ddd"></div>';
       } else {
         document.getElementById('app').innerHTML =
           '<div id=appedit-code class=main style=right:50%></div>' +
-          '<div id=appedit-content class=main ' +
+          '<div id=solsort-ui class=main ' +
           'style="left:50%;outline:1px solid #ddd"></div>';
       }
     
@@ -225,7 +226,7 @@ You can try it live at https://appedit.solsort.com/.
       document.getElementById('app').innerHTML = 'Starting app...';
       da.handle('appedit:html', (html) => {
         document.getElementById('app').innerHTML =
-          '<div id=appedit-content class=main></div>';
+          '<div id=solsort-ui class=main></div>';
         document.getElementById('appedit-content').innerHTML = html;
       });
     }
@@ -420,7 +421,7 @@ It is useful to have the sha-1 of the files, when uploading to github, as we can
                   gitignore_template: 'Node',
                   license_template: 'mit'
                 }}).then(() => new Promise((resolve) =>
-                    setTimeout(resolve, 300)));
+                    setTimeout(resolve, 1000)));
           }
         }).then(() => {
           return ajax(`https://api.github.com/repos/${project}/license` +

@@ -32,7 +32,8 @@ module.meta = {
 
 
 var da = require('direape@0.1');
-var reun = require('reun');
+var ss = require('solsort@0.1');
+var reun = require('reun@0.1');
 var showdown = require('showdown@1.6.0')
 var slice = (a, start, end) => Array.prototype.slice.call(a, start, end);
 
@@ -138,12 +139,12 @@ function edit() {
   if(window.innerWidth <= 1000) {
     document.getElementById('app').innerHTML =
       '<div id=appedit-code class=main style=top:45%></div>' +
-      '<div id=appedit-content class=main ' +
+      '<div id=solsort-ui class=main ' +
       'style="bottom:55%;outline:1px solid #ddd"></div>';
   } else {
     document.getElementById('app').innerHTML =
       '<div id=appedit-code class=main style=right:50%></div>' +
-      '<div id=appedit-content class=main ' +
+      '<div id=solsort-ui class=main ' +
       'style="left:50%;outline:1px solid #ddd"></div>';
   }
 
@@ -165,7 +166,7 @@ function edit() {
         "  version: '0.0.1'\n" +
         "};\n" +
         "var da = require('direape@0.1');\n" +
-        "da.run(da.parent, 'appedit:html',`\n" +
+        "da.setJS(['ui', 'html'], `\n" +
         "<center>\n" +
         "  <h1>Change me</h1>\n" +
         "  <p>Try to edit the code.</p>\n" +
@@ -210,24 +211,14 @@ function edit() {
   }
   window.CodeMirror = CodeMirror;
 
-  da.handle('appedit:html', (html) => {
-    document.getElementById('appedit-content').innerHTML = html;
-  });
   setTimeout(createCodeMirror, 0);
   window.onresize = edit;
-
-
 }
 
 // # App
 //
 function app() {
-  document.getElementById('app').innerHTML = 'Starting app...';
-  da.handle('appedit:html', (html) => {
-    document.getElementById('app').innerHTML =
-      '<div id=appedit-content class=main></div>';
-    document.getElementById('appedit-content').innerHTML = html;
-  });
+  document.getElementById('app').innerHTML = '<div id=solsort-ui class=main>Starting app...</div>';
 }
 
 // # Share
@@ -538,6 +529,7 @@ function newWorker() {
   }
   da.spawn().then(pid => {
     workerPid = pid;
+    da.run(workerPid, 'da:subscribe', ['ui'], {pid: da.pid, name: 'da:setIn'});
     runSaveCode(localStorage.getItem("appeditContent"));
   });
 }
