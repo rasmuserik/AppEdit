@@ -33,7 +33,7 @@ You can try it live at https://appedit.solsort.com/.
     
     var da = require('direape@0.1');
     var ss = require('solsort@0.1');
-    var reun = require('reun');
+    var reun = require('reun@0.1');
     var showdown = require('showdown@1.6.0')
     var slice = (a, start, end) => Array.prototype.slice.call(a, start, end);
     
@@ -166,7 +166,7 @@ You can try it live at https://appedit.solsort.com/.
             "  version: '0.0.1'\n" +
             "};\n" +
             "var da = require('direape@0.1');\n" +
-            "da.run(da.parent, 'appedit:html',`\n" +
+            "da.setJS(['ui', 'html'], `\n" +
             "<center>\n" +
             "  <h1>Change me</h1>\n" +
             "  <p>Try to edit the code.</p>\n" +
@@ -211,24 +211,14 @@ You can try it live at https://appedit.solsort.com/.
       }
       window.CodeMirror = CodeMirror;
     
-      da.handle('appedit:html', (html) => {
-        document.getElementById('appedit-content').innerHTML = html;
-      });
       setTimeout(createCodeMirror, 0);
       window.onresize = edit;
-    
-    
     }
     
 # App
 
     function app() {
-      document.getElementById('app').innerHTML = 'Starting app...';
-      da.handle('appedit:html', (html) => {
-        document.getElementById('app').innerHTML =
-          '<div id=solsort-ui class=main></div>';
-        document.getElementById('appedit-content').innerHTML = html;
-      });
+      document.getElementById('app').innerHTML = '<div id=solsort-ui class=main>Starting app...</div>';
     }
     
 # Share
@@ -539,6 +529,7 @@ It is useful to have the sha-1 of the files, when uploading to github, as we can
       }
       da.spawn().then(pid => {
         workerPid = pid;
+        da.run(workerPid, 'da:subscribe', ['ui'], {pid: da.pid, name: 'da:setIn'});
         runSaveCode(localStorage.getItem("appeditContent"));
       });
     }
