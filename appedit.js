@@ -137,10 +137,12 @@ var codemirror;
 function edit() {
   loadCss('//unpkg.com/codemirror/lib/codemirror.css');
   loadCss('//unpkg.com/codemirror/addon/lint/lint.css');
+  loadCss('//unpkg.com/codemirror/addon/dialog/dialog.css');
   loadCss('//unpkg.com/codemirror/addon/fold/foldgutter.css');
   var CodeMirror = require('codemirror/lib/codemirror');
   require('codemirror/addon/runmode/runmode.js');
   require('codemirror/addon/runmode/colorize.js');
+  require('codemirror/addon/dialog/dialog.js');
   require('codemirror/addon/fold/foldcode.js');
   require('codemirror/addon/fold/foldgutter.js');
   require('codemirror/addon/lint/lint.js');
@@ -179,14 +181,12 @@ function edit() {
     document.getElementById('app').innerHTML =
       '<div id=appedit-code class=main style=top:45%></div>' +
       '<div id=solsort-ui class=main ' +
-      'style="bottom:55%;outline:1px solid #ddd"></div>' +
-      '<div id=bottom-bar><span id=appedit-cmd></span><span id=show-help>Help: Ctrl+?</span></div>';
+      'style="bottom:55%;outline:1px solid #ddd"></div>';
   } else {
     document.getElementById('app').innerHTML =
       '<div id=appedit-code class=main style=right:50%></div>' +
       '<div id=solsort-ui class=main ' +
-      'style="left:50%;outline:1px solid #ddd"></div>' +
-      '<div id=bottom-bar><span id=appedit-cmd></span><span id=show-help>Help:&nbsp;Ctrl+?</span></div>';
+      'style="left:50%;outline:1px solid #ddd"></div>';
   }
 
   var codemirrorStyle = {
