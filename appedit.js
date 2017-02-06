@@ -116,7 +116,24 @@ function loadFromGithub() {
 //
 function read() {
   var code = localStorage.getItem('appeditContent');
-  document.getElementById('app').innerHTML = markdown2html(js2markdown(code));
+  document.getElementById('app').innerHTML = 
+    '<div id="table-of-contents">TOC</div>' +
+    markdown2html(js2markdown(code));
+  setTimeout(() => {
+    var str = '';
+    !document.getElementById('app').innerHTML.replace(
+        /<[hH]([123456])[^>]*?id="?([^> "]*)[^>]*>(.*)<[/][hH][123456]/g,
+        function(_, level, hash, title) {
+          console.log('match', level, hash, title);
+          for(var i = 1; i < level; ++i) {
+            str += '&nbsp;|&nbsp;&nbsp;';
+          }
+          str += '<a href="#' + hash + '">' + title + '</a><br>';
+        });
+   document.getElementById('table-of-contents').innerHTML = 
+     '<p><strong>Table of contents:</strong></p>' + str;
+    console.log(str);
+  }, 0);
 }
 
 // # Edit
