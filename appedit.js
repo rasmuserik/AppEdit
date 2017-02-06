@@ -68,7 +68,7 @@ var slice = (a, start, end) => Array.prototype.slice.call(a, start, end);
 //
 // Force https on appedit.solsort.com, as writing to github otherwise does not work.
 //
-if(location.href.startsWith 'http://appedit.solsort.com') {
+if(location.href.startsWith('http://appedit.solsort.com')) {
   location.href = location.href.replace('http', 'https');
 }
 

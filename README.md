@@ -66,6 +66,16 @@ Mindmap of what is needed before version 0.2:
     
 # routing + load from github
 
+Force https on appedit.solsort.com, as writing to github otherwise does not work.
+
+    if(location.href.startsWith('http://appedit.solsort.com')) {
+      location.href = location.href.replace('http', 'https');
+    }
+    
+App routing is base on the search parameter (after the questionmark in the url), - as the hash-parameter is sometimes deleted when sharing links on mobile, and we want all requests to go to a single `index.html`. 
+
+The route is a path, separated by `/`, and defaults to `About` if no route is mentioned.
+    
     var route = location.search.slice(1).split('/');
     route[0] = route[0] || 'About';
     
