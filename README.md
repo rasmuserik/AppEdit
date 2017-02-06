@@ -15,6 +15,33 @@ You can try it live at https://appedit.solsort.com/.
 
 [Roadmap](https://github.com/solsort/AppEdit/milestones?direction=asc&sort=due_date) and [feedback/suggestions](https://github.com/solsort/AppEdit/issues/new) via github issues.
 
+Mindmap of what is needed before version 0.2:
+
+- Editor
+    - [ ] vim commandbar
+    - [ ] overlay with key-binding overview + toggle vim
+- Libraries
+    - [ ] Turtle graphics
+    - [ ] Unit testing
+- Examples/documentation
+    - [ ] Tutorial
+    - [ ] Reread/document all libraries/dependencies
+- Reun
+    - [ ] require opt/version parameter
+    - [ ] main executed as with node-modules
+- Worker
+    - [ ] Error-handling send to outer
+    - [ ] Webworker keep-alive
+- App-runner within editor
+    - [ ] show errors instead of app, when they happens
+    - [ ] console.log overlay
+- Compatibilty
+    - [ ] Check Edge
+    - [ ] Check Firefox
+- Minor
+    - [ ] exports._meta instead of exports.meta
+    - [ ] Force https
+
 # Dependencies:
 
 [REUN](https://reun.solsort.com) - require/module-loader through unpkg
