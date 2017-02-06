@@ -558,7 +558,7 @@ It is useful to have the sha-1 of the files, when uploading to github, as we can
     
 ## Webworker setup
     
-    var workerPid;
+    var workerPid, workerInitSource;
     function worker() {
       da.dispatch(da.msg.apply(null, [workerPid].concat(slice(arguments))));
     }
@@ -570,27 +570,55 @@ It is useful to have the sha-1 of the files, when uploading to github, as we can
       }
       da.spawn().then(pid => {
         workerPid = pid;
-        da.run(workerPid, 'da:subscribe', ['ui'], {pid: da.pid, name: 'da:setIn'});
-        runSaveCode(localStorage.getItem("appeditContent"));
-      });
+        da.run(workerPid, 'da:subscribe', ['ui'], {pid: da.pid, name: 'appedit:ui-update'});
+      })
+      .then(() => workerExec(workerInitSource))
+      .then(() => runSaveCode(localStorage.getItem("appeditContent")));
     }
-    newWorker();
+    setTimeout(newWorker, 0);
+    
     function workerExec(str) {
       return new Promise((resolve, reject) =>
           workerPid ? da
           .call(workerPid, 'reun:run', str, location.href)
           .then(o => o ? resolve(o) : reject(o))
-          : reject(null)
-          )
+          : reject(null))
     }
+    
+    workerInitSource = `
+    self.onerror = function(msg, file, line, col, err) {
+      var da = require('direape');
+      err = Object.assign({message: msg, file: file, line: line, col: col}, 
+          da._jsonify(err));
+      da.run(da.parent, 'appedit:worker-error', da._jsonify(err));
+      throw err;
+    };
+    `;
+    
 TODO ping/keepalive
 
+## Handlers
+    
+    da.handle('appedit:worker-error', e => {
+      console.log('worker error', JSON.stringify(e));
+      ss.set(['ui', 'hasError'], true);
+      ss.set(['ui', 'html'], ['pre', e.stack, '\n\n\n', JSON.stringify(e, null, 4)]);
+    });
+    da.handle('appedit:ui-update', (path, content) => {
+      ss.set(path, content);
+      console.log('ui-update', path, content);
+      console.log('worker error', JSON.stringify(e));
+    });
+    
 ## Manage code
 
     function runSaveCode(str) {
       localStorage.setItem('appeditContent', str);
-      workerExec(str).then(o => {
+      ss.set(['ui', 'hasError'], false);
+      return workerExec(str).then(o => {
         localStorage.setItem('appeditMeta', JSON.stringify([o && metaValues(o)]));
+        workerExec(`var da = require('direape');
+            da.run(da.parent, 'appedit:ui-update', ['ui'], da.getJS(['ui']));`);
       });
     }
     function setCode(str) {
