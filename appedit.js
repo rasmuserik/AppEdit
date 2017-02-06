@@ -18,7 +18,7 @@
 // Mindmap of what is needed before version 0.2:
 // 
 // - Editor
-//     - [ ] vim commandbar
+//     - [x] vim commandbar
 //     - [ ] overlay with key-binding overview + toggle vim
 // - Libraries
 //     - [ ] Turtle graphics
@@ -53,7 +53,7 @@
 // [µBackend](https://mubackend.solsort.com) - minimal backend, used for github login
 //
 
-module.meta = {
+exports._meta = {
   title: 'AppEdit',
   version: '0.0.1',
   customIndexHtml: true
@@ -201,7 +201,7 @@ function edit() {
         "// This is a bit of documentation, try 'Read' above. " +
         "Code can be written as semi-literate code, see more here " +
         "<https://en.wikipedia.org/wiki/Literate_programming>\n\n" +
-        "module.meta = {\n" +
+        "exports._meta = {\n" +
         "  id: 'sample-app',\n" +
         "  name: 'Sample Application',\n" +
         "  version: '0.0.1'\n" +
@@ -288,7 +288,7 @@ function share() {
 
       show/upload icon for project
 
-      TODO: guide to \`module.meta\` / preparing for release
+      TODO: guide to \`exports._meta\` / preparing for release
 
       - select application name (needed for saving) - also how to rename project
       - select license
@@ -603,7 +603,7 @@ function setCode(str) {
 // ## Code export
 
 function metaValues(o) {
-  var meta = o.meta || {};
+  var meta = o._meta || {};
   if(!meta.id && !meta.title) {
     meta = Object.assign({title: 'Unnamed solsort.com app'}, meta);
   }
