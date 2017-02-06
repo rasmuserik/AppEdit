@@ -24,6 +24,7 @@
 //     - [ ] Turtle graphics
 //     - [ ] Unit testing
 // - Examples/documentation
+//     - [ ] Better default code
 //     - [ ] Tutorial
 //     - [ ] Reread/document all libraries/dependencies
 // - Reun
@@ -38,9 +39,10 @@
 // - Compatibilty
 //     - [ ] Check Edge
 //     - [ ] Check Firefox
-// - Minor
+// - Misc
+//     - [ ] ability to save to org-repository
 //     - [ ] exports._meta instead of exports.meta
-//     - [ ] Force https
+//     - [x] Force https
 //
 // # Dependencies:
 //
@@ -177,12 +179,14 @@ function edit() {
     document.getElementById('app').innerHTML =
       '<div id=appedit-code class=main style=top:45%></div>' +
       '<div id=solsort-ui class=main ' +
-      'style="bottom:55%;outline:1px solid #ddd"></div>';
+      'style="bottom:55%;outline:1px solid #ddd"></div>' +
+      '<div id=bottom-bar><span id=appedit-cmd></span><span id=show-help>Help: Ctrl+?</span></div>';
   } else {
     document.getElementById('app').innerHTML =
       '<div id=appedit-code class=main style=right:50%></div>' +
       '<div id=solsort-ui class=main ' +
-      'style="left:50%;outline:1px solid #ddd"></div>';
+      'style="left:50%;outline:1px solid #ddd"></div>' +
+      '<div id=bottom-bar><span id=appedit-cmd></span><span id=show-help>Help:&nbsp;Ctrl+?</span></div>';
   }
 
   var codemirrorStyle = {
