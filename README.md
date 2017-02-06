@@ -63,7 +63,7 @@ Mindmap of what is needed before version 0.2:
     var da = require('direape@0.1');
     var ss = require('solsort@0.1');
     var reun = require('reun@0.1');
-    var showdown = require('showdown@1.6.0')
+    var showdown = require('showdown@1.6.0');
     var slice = (a, start, end) => Array.prototype.slice.call(a, start, end);
     
 # routing + load from github
@@ -92,6 +92,7 @@ The route is a path, separated by `/`, and defaults to `About` if no route is me
     }
     
     if(!self.document) {
+      undefined;
     } else if(location.hash.startsWith('#muBackendLoginToken=')) {
       loggedIn();
     } else if(route[1] === 'js' && route[2] === 'gh') {
@@ -159,7 +160,7 @@ The route is a path, separated by `/`, and defaults to `About` if no route is me
         function headerLevel(line) {
           if (!line) return maxDepth;
           var match = line.match(/[/][/] #+/);
-          return match ? match[0].length - 3 : maxDepth
+          return match ? match[0].length - 3 : maxDepth;
         }
     
         level = headerLevel(firstLine);
@@ -197,33 +198,33 @@ The route is a path, separated by `/`, and defaults to `About` if no route is me
     
       if(!localStorage.getItem('appeditContent')) {
         localStorage.setItem('appeditContent',
-            "//\ # Sample app \n//\n" +
-            "// This is a bit of documentation, try 'Read' above. " +
-            "Code can be written as semi-literate code, see more here " +
-            "<https://en.wikipedia.org/wiki/Literate_programming>\n\n" +
-            "exports._meta = {\n" +
-            "  id: 'sample-app',\n" +
-            "  name: 'Sample Application',\n" +
-            "  version: '0.0.1'\n" +
-            "};\n" +
-            "var da = require('direape@0.1');\n" +
-            "da.setJS(['ui', 'html'], `\n" +
-            "<center>\n" +
-            "  <h1>Change me</h1>\n" +
-            "  <p>Try to edit the code.</p>\n" +
-            "  <p>Choose Edit above, and then<br>\n" +
-            "     alter the code on the left side...</p>\n" +
-            "  (vi keybindings is enabled,<br>\n" +
-            "  so press <tt>i</tt> to insert)\n" +
-            "</center>\n" +
-            "${Object.keys(require('lodash')).join('<br>')}\n" +
-            "`);" );
+            '//\ # Sample app \n//\n' +
+            '// This is a bit of documentation, try \'Read\' above. ' +
+            'Code can be written as semi-literate code, see more here ' +
+            '<https://en.wikipedia.org/wiki/Literate_programming>\n\n' +
+            'exports._meta = {\n' +
+            '  id: \'sample-app\',\n' +
+            '  name: \'Sample Application\',\n' +
+            '  version: \'0.0.1\'\n' +
+            '};\n' +
+            'var da = require(\'direape@0.1\');\n' +
+            'da.setJS([\'ui\', \'html\'], `\n' +
+            '<center>\n' +
+            '  <h1>Change me</h1>\n' +
+            '  <p>Try to edit the code.</p>\n' +
+            '  <p>Choose Edit above, and then<br>\n' +
+            '     alter the code on the left side...</p>\n' +
+            '  (vi keybindings is enabled,<br>\n' +
+            '  so press <tt>i</tt> to insert)\n' +
+            '</center>\n' +
+            '${Object.keys(require(\'lodash\')).join(\'<br>\')}\n' +
+            '`);' );
       }
     
       function createCodeMirror() {
         codemirror = CodeMirror(
             function(cmElement) {
-              cmElement.id = "codemirror";
+              cmElement.id = 'codemirror';
               Object.assign(cmElement.style, codemirrorStyle);
               document.getElementById('appedit-code').appendChild(cmElement);
             },
@@ -234,7 +235,7 @@ The route is a path, separated by `/`, and defaults to `About` if no route is me
                   localStorage.setItem('appeditAfterSave', 'Edit');
                   location.search = '?Save';
                 },
-                "Ctrl-Q": (cm) => cm.foldCode(cm.getCursor())
+                'Ctrl-Q': (cm) => cm.foldCode(cm.getCursor())
               },
               lineWrapping: true,
               keyMap: 'vim',
@@ -379,7 +380,7 @@ It is useful to have the sha-1 of the files, when uploading to github, as we can
         <script>document.write('<script src="//incoming.solsort.com/log.js?' + location.protocol + '//' + location.host + location.pathname + location.search + '" async></s' + 'cript>');</script>
         <script>setTimeout(()=>reun.require('./${meta.id}.js'),0);</script>
         </body>
-        `
+        `;
     }
     
 ### Generate README.md from source
@@ -461,10 +462,10 @@ It is useful to have the sha-1 of the files, when uploading to github, as we can
         }).then(o => {
           var license = (o.license || {}).spdx_id;
           if(!['MIT', 'GPL-3.0'].includes(license)) {
-            throw new Error('Invalid license')
+            throw new Error('Invalid license');
           }
           return ajax(`https://api.github.com/repos/${project}/contents` +
-              '?access_token=' + token)
+              '?access_token=' + token);
         }).then(ghFiles => {
           console.log('here');
           var ghShas = {};
@@ -481,7 +482,7 @@ It is useful to have the sha-1 of the files, when uploading to github, as we can
               path: f.name,
               content: btoa(f.content),
               message: `Commit ${f.name} via https://appedit.solsort.com/?Edit/js/gh/${project}.`
-            }
+            };
             if(ghSha) {
               message.sha = ghSha;
             }
@@ -491,7 +492,7 @@ It is useful to have the sha-1 of the files, when uploading to github, as we can
           });
           return result;
         }).then(() => location.href =
-          location.href.replace(/[?#].*/, '?' + localStorage.getItem('appeditAfterSave') || ""))
+          location.href.replace(/[?#].*/, '?' + localStorage.getItem('appeditAfterSave') || ''))
           .catch(e => {
             if(e.constructor === XMLHttpRequest &&
                 e.status === 200) {
@@ -517,13 +518,14 @@ It is useful to have the sha-1 of the files, when uploading to github, as we can
               try {
                 result = JSON.parse(xhr.responseText);
               } catch(e) {
+                undefined;
               }
               resolve(result);
             } else {
               reject(xhr);
             }
           }
-        }
+        };
         xhr.send(opt.data ? JSON.stringify(opt.data) : undefined);
       });
     }
@@ -547,7 +549,7 @@ It is useful to have the sha-1 of the files, when uploading to github, as we can
       return String.fromCharCode.apply(null, new Uint8Array(a))
         .replace(/./g, function(s) {
           var c = s.charCodeAt(0);
-          return (c >> 4).toString(16) + (c & 15).toString(16)
+          return (c >> 4).toString(16) + (c & 15).toString(16);
         });
     }
     function sha1(str) {
@@ -573,7 +575,7 @@ It is useful to have the sha-1 of the files, when uploading to github, as we can
         da.run(workerPid, 'da:subscribe', ['ui'], {pid: da.pid, name: 'appedit:ui-update'});
       })
       .then(() => workerExec(workerInitSource))
-      .then(() => runSaveCode(localStorage.getItem("appeditContent")));
+      .then(() => runSaveCode(localStorage.getItem('appeditContent')));
     }
     setTimeout(newWorker, 0);
     
@@ -582,7 +584,7 @@ It is useful to have the sha-1 of the files, when uploading to github, as we can
           workerPid ? da
           .call(workerPid, 'reun:run', str, location.href)
           .then(o => o ? resolve(o) : reject(o))
-          : reject(null))
+          : reject(null));
     }
     
     workerInitSource = `
@@ -606,8 +608,6 @@ TODO ping/keepalive
     });
     da.handle('appedit:ui-update', (path, content) => {
       ss.set(path, content);
-      console.log('ui-update', path, content);
-      console.log('worker error', JSON.stringify(e));
     });
     
 ## Manage code
