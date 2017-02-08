@@ -313,6 +313,9 @@ The route is a path, separated by `/`, and defaults to `About` if no route is me
     }
     
     setTimeout(() => {
+      if(!codemirror) {
+        return;
+      }
       toggleVim();
       toggleVim();
       document.getElementById('vim-mode').onclick = toggleVim;
