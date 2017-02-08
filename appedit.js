@@ -83,7 +83,7 @@ route[0] = route[0] || 'About';
 
 function main() {
   (({
-    Save: save,
+    Export: exportToGithub,
     Read: read,
     Edit: edit,
     App: app,
@@ -97,10 +97,20 @@ if(!self.document) {
   loggedIn();
 } else if(route[1] === 'js' && route[2] === 'gh') {
   loadFromGithub();
+} else if(route[1] === 'js' && route[2] === 'cs') {
+  loadFromCodeStorage();
 } else {
   (document.getElementById('topbar'+route[0])||{}).className = 'topbar-active';
   main();
   document.getElementById('loading').remove();
+}
+
+function loadFromCodeStorage() {
+  ajax(`https://code-storage.solsort.com/${route[3]}`)
+    .then(o => {
+      localStorage.setItem('appeditContent', o);
+      location.search = location.search.replace(/\/.*/, '');
+    });
 }
 
 function loadFromGithub() {
@@ -248,10 +258,11 @@ function edit() {
         {
           mode: 'javascript',
           extraKeys: {
-            'Ctrl-S': () => {
-              localStorage.setItem('appeditAfterSave', 'Edit');
-              location.search = '?Save';
+            'Ctrl-E': () => {
+              localStorage.setItem('appeditAfterExport', 'Edit');
+              location.search = '?Export';
             },
+            'Ctrl-S': () => location.search = '?Share',
             'Ctrl-Q': (cm) => cm.foldCode(cm.getCursor()),
             'Ctrl-H': showHelp
           },
@@ -319,10 +330,21 @@ function app() {
 // # Share
 //
 // ## Share page/document
+
+
+
 function share() {
+
+  ajax('https://code-storage.solsort.com/', {data: localStorage.getItem('appeditContent')})
+    .then(id => {
+
   document.getElementById('app').innerHTML = markdown2html(`
 
 # Share
+
+      <https://appedit.solsort.com/?Edit/js/cs/${id}>
+      <https://appedit.solsort.com/?App/js/cs/${id}>
+      <https://appedit.solsort.com/?Read/js/cs/${id}>
 
       _not implemented yet, will contain the following:_
 
@@ -366,6 +388,7 @@ function share() {
       TODO: guide to release as a Chrome app
 
       `.replace(/\n */g, '\n'));
+    });
 }
 
 // ## Generate files for export
@@ -460,18 +483,15 @@ function makeReadmeMd(source, meta) {
   return s;
 }
 
-// ## Save to github
+// ## Export to github
 
 
-function saveToGithub() {
+function exportToGithub() {
   location.href = 'https://mubackend.solsort.com/auth/github?url=' +
     location.href.replace(/[?#].*/, '') +
     '&scope=public_repo';
-  localStorage.setItem('appeditAction', 'save');
+  localStorage.setItem('appeditAction', 'export');
   /* https://developer.github.com/v3/oauth/#scopes */
-}
-function save() {
-  saveToGithub();
 }
 
 function loggedIn() {
@@ -545,11 +565,11 @@ function loggedIn() {
       });
       return result;
     }).then(() => location.href =
-      location.href.replace(/[?#].*/, '?' + localStorage.getItem('appeditAfterSave') || ''))
+      location.href.replace(/[?#].*/, '?' + localStorage.getItem('appeditAfterExport') || ''))
       .catch(e => {
         if(e.constructor === XMLHttpRequest &&
             e.status === 200) {
-          saveToGithub();
+          exportToGithub();
         }
         console.log('apierror', e);
         throw e;
