@@ -252,7 +252,8 @@ The route is a path, separated by `/`, and defaults to `About` if no route is me
                   localStorage.setItem('appeditAfterSave', 'Edit');
                   location.search = '?Save';
                 },
-                'Ctrl-Q': (cm) => cm.foldCode(cm.getCursor())
+                'Ctrl-Q': (cm) => cm.foldCode(cm.getCursor()),
+                'Ctrl-H': showHelp
               },
               lineWrapping: true,
               keyMap: 'vim',
@@ -267,12 +268,47 @@ The route is a path, separated by `/`, and defaults to `About` if no route is me
           var content = o.getValue();
           runSaveCode(content);
         });
+        codemirror.focus();
       }
       window.CodeMirror = CodeMirror;
     
       setTimeout(createCodeMirror, 0);
       window.onresize = edit;
     }
+    
+# Help/settings
+
+    function toggleVim(e) {
+      var vimEnabled = localStorage.getItem('appEditVim');
+      vimEnabled = vimEnabled === 'yes';
+      vimEnabled = !vimEnabled;
+      localStorage.setItem('appEditVim', vimEnabled ? 'yes' : 'no');
+      document.getElementById('vim-mode-checkbox').checked = vimEnabled;
+      codemirror.setOption('keyMap', vimEnabled ? 'vim' : 'default');
+      if(e) {
+        e.stopPropagation();
+      }
+      document.getElementById('vim-help').style.display =
+        vimEnabled ? 'inline' : 'none';
+    }
+    
+    function hideHelp() {
+      document.getElementById('help').style.display = 'none';
+      codemirror.focus();
+    }
+    function showHelp() {
+      document.getElementById('help').style.display = 'inline-block';
+      document.getElementById('vim-mode-checkbox').focus();
+    }
+    
+    setTimeout(() => {
+      toggleVim();
+      toggleVim();
+      document.getElementById('vim-mode').onclick = toggleVim;
+      document.getElementById('vim-mode-checkbox').onkeydown = hideHelp;
+      var helpElem = document.getElementById('help');
+      helpElem.onclick = hideHelp;
+    }, 0);
     
 # App
 
@@ -619,7 +655,6 @@ TODO ping/keepalive
 ## Handlers
     
     da.handle('appedit:worker-error', e => {
-      console.log('worker error', JSON.stringify(e));
       ss.set(['ui', 'hasError'], true);
       ss.set(['ui', 'html'], ['pre', e.stack, '\n\n\n', JSON.stringify(e, null, 4)]);
     });
