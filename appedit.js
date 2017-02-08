@@ -313,6 +313,9 @@ function showHelp() {
 }
 
 setTimeout(() => {
+  if(!codemirror) {
+    return;
+  }
   toggleVim();
   toggleVim();
   document.getElementById('vim-mode').onclick = toggleVim;
