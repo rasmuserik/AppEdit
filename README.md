@@ -665,11 +665,12 @@ It is useful to have the sha-1 of the files, when uploading to github, as we can
     
     workerInitSource = `
     self.onerror = function(msg, file, line, col, err) {
+      err = err || new Error(msg); 
+      console.log('onerror', msg, file, line, col, err);
       var da = require('direape');
       err = Object.assign({message: msg, file: file, line: line, col: col}, 
-          da._jsonify(err));
+          da._jsonify(err)); 
       da.run(da.parent, 'appedit:worker-error', da._jsonify(err));
-      throw err;
     };
     `;
     
