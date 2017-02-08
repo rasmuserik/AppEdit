@@ -205,7 +205,7 @@ The route is a path, separated by `/`, and defaults to `About` if no route is me
         };
       });
     
-      if(window.innerWidth <= 1000) {
+      if(window.innerWidth <= 400) {
         document.getElementById('app').innerHTML =
           '<div id=appedit-code class=main style=top:45%></div>' +
           '<div id=solsort-ui class=main ' +
