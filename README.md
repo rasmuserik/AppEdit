@@ -15,35 +15,6 @@ You can try it live at https://appedit.solsort.com/.
 
 [Roadmap](https://github.com/solsort/AppEdit/milestones?direction=asc&sort=due_date) and [feedback/suggestions](https://github.com/solsort/AppEdit/issues/new) via github issues.
 
-Mindmap of what is needed before version 0.2:
-
-- Editor
-    - [x] vim commandbar
-    - [ ] overlay with key-binding overview + toggle vim
-- Libraries
-    - [ ] Turtle graphics
-    - [ ] Unit testing
-- Examples/documentation
-    - [ ] Better default code
-    - [ ] Tutorial
-    - [ ] Reread/document all libraries/dependencies
-- Reun
-    - [ ] require opt/version parameter
-    - [ ] main executed as with node-modules
-- Worker
-    - [ ] Error-handling send to outer
-    - [ ] Webworker keep-alive
-- App-runner within editor
-    - [ ] show errors instead of app, when they happens
-    - [ ] console.log overlay
-- Compatibilty
-    - [ ] Check Edge
-    - [ ] Check Firefox
-- Misc
-    - [ ] ability to save to org-repository
-    - [ ] exports._meta instead of exports.meta
-    - [x] Force https
-
 # Dependencies:
 
 [REUN](https://reun.solsort.com) - require/module-loader through unpkg
@@ -71,7 +42,7 @@ Mindmap of what is needed before version 0.2:
 Force https on appedit.solsort.com, as writing to github otherwise does not work.
 
     if(location.href.startsWith('http://appedit.solsort.com')) {
-      location.href = location.href.replace('http', 'https');
+    location.href = location.href.replace('http', 'https');
     }
     
 App routing is base on the search parameter (after the questionmark in the url), - as the hash-parameter is sometimes deleted when sharing links on mobile, and we want all requests to go to a single `index.html`. 
@@ -133,16 +104,16 @@ The route is a path, separated by `/`, and defaults to `About` if no route is me
         var str = '';
         !document.getElementById('app').innerHTML.replace(
             /<[hH]([123456])[^>]*?id="?([^> "]*)[^>]*>(.*)<[/][hH][123456]/g,
-            function(_, level, hash, title) {
-              console.log('match', level, hash, title);
-              for(var i = 1; i < level; ++i) {
-                str += '&nbsp;|&nbsp;&nbsp;';
-              }
-              str += '<a href="#' + hash + '">' + title + '</a><br>';
-            });
-       document.getElementById('table-of-contents').innerHTML = 
-         '<p><strong>Table of contents:</strong></p>' + str;
-        console.log(str);
+        function(_, level, hash, title) {
+          console.log('match', level, hash, title);
+          for(var i = 1; i < level; ++i) {
+            str += '&nbsp;|&nbsp;&nbsp;';
+          }
+          str += '<a href="#' + hash + '">' + title + '</a><br>';
+        });
+      document.getElementById('table-of-contents').innerHTML = 
+        '<p><strong>Table of contents:</strong></p>' + str;
+      console.log(str);
       }, 0);
     }
     
@@ -161,13 +132,43 @@ The route is a path, separated by `/`, and defaults to `About` if no route is me
     }
     self.loadcss = loadCss;
     
+    
+## Default editor content
+    
+    if(!localStorage.getItem('appeditContent')) {
+      localStorage.setItem('appeditContent',
+          '//\ # Sample app \n//\n' +
+          '// This is a bit of documentation, try \'Read\' above. ' +
+          'Code can be written as semi-literate code, see more here ' +
+          '<https://en.wikipedia.org/wiki/Literate_programming>\n\n' +
+          'exports._meta = {\n' +
+            '  id: \'sample-app\',\n' +
+              '  name: \'Sample Application\',\n' +
+              '  version: \'0.0.1\'\n' +
+              '};\n' +
+              'var da = require(\'direape@0.1\');\n' +
+              'da.setJS([\'ui\', \'html\'], `\n' +
+                '<center>\n' +
+                '  <h1>Change me</h1>\n' +
+                '  <p>Try to edit the code.</p>\n' +
+                '  <p>Choose Edit above, and then<br>\n' +
+                '     alter the code on the left side...</p>\n' +
+                '  (vi keybindings is enabled,<br>\n' +
+                  '  so press <tt>i</tt> to insert)\n' +
+                '</center>\n' +
+                '${Object.keys(require(\'lodash\')).join(\'<br>\')}\n' +
+                '`);' );
+    }
+## Codemirror
+    
     var codemirror;
+    var CodeMirror;
     function edit() {
       loadCss('//unpkg.com/codemirror/lib/codemirror.css');
       loadCss('//unpkg.com/codemirror/addon/lint/lint.css');
       loadCss('//unpkg.com/codemirror/addon/dialog/dialog.css');
       loadCss('//unpkg.com/codemirror/addon/fold/foldgutter.css');
-      var CodeMirror = require('codemirror/lib/codemirror');
+      CodeMirror = require('codemirror/lib/codemirror');
       require('codemirror/addon/runmode/runmode.js');
       require('codemirror/addon/runmode/colorize.js');
       require('codemirror/addon/dialog/dialog.js');
@@ -178,7 +179,26 @@ The route is a path, separated by `/`, and defaults to `About` if no route is me
       require('codemirror/keymap/vim.js');
       require('codemirror/mode/javascript/javascript.js');
       self.JSHINT = require('jshint/dist/jshint.js').JSHINT;
+      enableLiterateFolding();
     
+      if(window.innerWidth <= 400) {
+        document.getElementById('app').innerHTML =
+          '<div id=appedit-code class=main style=top:45%></div>' +
+          '<div id=solsort-ui class=main ' +
+          'style="bottom:55%;outline:1px solid #ddd"></div>';
+      } else {
+        document.getElementById('app').innerHTML =
+          '<div id=appedit-code class=main style=right:50%></div>' +
+          '<div id=solsort-ui class=main ' +
+          'style="left:50%;outline:1px solid #ddd"></div>';
+      }
+      setTimeout(createCodeMirror, 0);
+      window.onresize = edit;
+    }
+    
+## Custom folding
+    
+    function enableLiterateFolding() {
       /* TODO: refactor: javascript-mode should have configurable fold-method, 
        * and this shouldn't be called 'brace' */
       CodeMirror.registerHelper('fold', 'brace', function(cm, start) {
@@ -204,88 +224,50 @@ The route is a path, separated by `/`, and defaults to `About` if no route is me
           to: CodeMirror.Pos(end, cm.getLine(end).length)
         };
       });
-    
-      if(window.innerWidth <= 400) {
-        document.getElementById('app').innerHTML =
-          '<div id=appedit-code class=main style=top:45%></div>' +
-          '<div id=solsort-ui class=main ' +
-          'style="bottom:55%;outline:1px solid #ddd"></div>';
-      } else {
-        document.getElementById('app').innerHTML =
-          '<div id=appedit-code class=main style=right:50%></div>' +
-          '<div id=solsort-ui class=main ' +
-          'style="left:50%;outline:1px solid #ddd"></div>';
-      }
-    
-      var codemirrorStyle = {
-        position: 'absolute',
-        top: 0, left: 0,
-        width: '100%', height: '100%'
-      };
-    
-      if(!localStorage.getItem('appeditContent')) {
-        localStorage.setItem('appeditContent',
-            '//\ # Sample app \n//\n' +
-            '// This is a bit of documentation, try \'Read\' above. ' +
-            'Code can be written as semi-literate code, see more here ' +
-            '<https://en.wikipedia.org/wiki/Literate_programming>\n\n' +
-            'exports._meta = {\n' +
-            '  id: \'sample-app\',\n' +
-            '  name: \'Sample Application\',\n' +
-            '  version: \'0.0.1\'\n' +
-            '};\n' +
-            'var da = require(\'direape@0.1\');\n' +
-            'da.setJS([\'ui\', \'html\'], `\n' +
-            '<center>\n' +
-            '  <h1>Change me</h1>\n' +
-            '  <p>Try to edit the code.</p>\n' +
-            '  <p>Choose Edit above, and then<br>\n' +
-            '     alter the code on the left side...</p>\n' +
-            '  (vi keybindings is enabled,<br>\n' +
-            '  so press <tt>i</tt> to insert)\n' +
-            '</center>\n' +
-            '${Object.keys(require(\'lodash\')).join(\'<br>\')}\n' +
-            '`);' );
-      }
-    
-      function createCodeMirror() {
-        codemirror = CodeMirror(
-            function(cmElement) {
-              cmElement.id = 'codemirror';
-              Object.assign(cmElement.style, codemirrorStyle);
-              document.getElementById('appedit-code').appendChild(cmElement);
-            },
-            {
-              mode: 'javascript',
-              extraKeys: {
-                'Ctrl-E': () => {
-                  localStorage.setItem('appeditAfterExport', 'Edit');
-                  location.search = '?Export';
-                },
-                'Ctrl-S': () => location.search = '?Share',
-                'Ctrl-Q': (cm) => cm.foldCode(cm.getCursor()),
-                'Ctrl-H': showHelp
-              },
-              lineWrapping: true,
-              keyMap: 'vim',
-              lineNumbers: true,
-              foldGutter: true,
-              gutters: ['CodeMirror-lint-markers', 'CodeMirror-linenumbers', 
-              'CodeMirror-foldgutter'],
-              lint: {esversion: 6},
-              value: localStorage.getItem('appeditContent')
-            });
-        codemirror.on('changes', function(o) {
-          var content = o.getValue();
-          runSaveCode(content);
-        });
-        codemirror.focus();
-      }
-      window.CodeMirror = CodeMirror;
-    
-      setTimeout(createCodeMirror, 0);
-      window.onresize = edit;
     }
+    
+## Create codemirror element
+    
+    var codemirrorStyle = {
+      position: 'absolute',
+      top: 0, left: 0,
+      width: '100%', height: '100%'
+    };
+    
+    function createCodeMirror() {
+      codemirror = CodeMirror(
+          function(cmElement) {
+            cmElement.id = 'codemirror';
+            Object.assign(cmElement.style, codemirrorStyle);
+            document.getElementById('appedit-code').appendChild(cmElement);
+          },
+          {
+            mode: 'javascript',
+            extraKeys: {
+              'Ctrl-E': () => {
+                localStorage.setItem('appeditAfterExport', 'Edit');
+                location.search = '?Export';
+              },
+              'Ctrl-S': () => location.search = '?Share',
+              'Ctrl-Q': (cm) => cm.foldCode(cm.getCursor()),
+              'Ctrl-H': showHelp
+            },
+            lineWrapping: true,
+            keyMap: 'vim',
+            lineNumbers: true,
+            foldGutter: true,
+            gutters: ['CodeMirror-lint-markers', 'CodeMirror-linenumbers', 
+            'CodeMirror-foldgutter'],
+            lint: {esversion: 6},
+            value: localStorage.getItem('appeditContent')
+          });
+      codemirror.on('changes', function(o) {
+        var content = o.getValue();
+        runSaveCode(content);
+      });
+      codemirror.focus();
+    }
+    
     
 # Help/settings
 
@@ -341,56 +323,56 @@ The route is a path, separated by `/`, and defaults to `About` if no route is me
       ajax('https://code-storage.solsort.com/', {data: localStorage.getItem('appeditContent')})
         .then(id => {
     
-      document.getElementById('app').innerHTML = markdown2html(`
+          document.getElementById('app').innerHTML = markdown2html(`
     
     # Share
     
-          <https://appedit.solsort.com/?Edit/js/cs/${id}>
-          <https://appedit.solsort.com/?App/js/cs/${id}>
-          <https://appedit.solsort.com/?Read/js/cs/${id}>
+              <https://appedit.solsort.com/?Edit/js/cs/${id}>
+              <https://appedit.solsort.com/?App/js/cs/${id}>
+              <https://appedit.solsort.com/?Read/js/cs/${id}>
     
-          _not implemented yet, will contain the following:_
+              _not implemented yet, will contain the following:_
     
-          If modified, notice need to login to github to save/share.  Notice: will write/publish current version to github (if modified). Also show current name.
+              If modified, notice need to login to github to save/share.  Notice: will write/publish current version to github (if modified). Also show current name.
     
-          Share app buttons: fb, twitter, linkedin, ...
+              Share app buttons: fb, twitter, linkedin, ...
     
-          Share documentation buttons: fb, twitter, linkedin, ...
+              Share documentation buttons: fb, twitter, linkedin, ...
     
-          Share source code editing buttons: fb, twitter, linkedin, ...
+              Share source code editing buttons: fb, twitter, linkedin, ...
     
     # Settings
     
-          Vim-mode disable/enable.
+              Vim-mode disable/enable.
     
     # Distribution
     
-          show/upload icon for project
+              show/upload icon for project
     
-          TODO: guide to \`exports._meta\` / preparing for release
+              TODO: guide to \`exports._meta\` / preparing for release
     
-          - select application name (needed for saving) - also how to rename project
-          - select license
+              - select application name (needed for saving) - also how to rename project
+              - select license
     
     ## Deploy to Web
     
-          TODO: guide to set up project with github pages.
+              TODO: guide to set up project with github pages.
     
-          guide to CNAME
+              guide to CNAME
     
     ## Deploy to Android, iOS, and Windows Phone
     
-          TODO: guide to set up project for Cordova / PhoneGap Build
+              TODO: guide to set up project for Cordova / PhoneGap Build
     
     ## Deploy to Facebook
     
-          TODO: guide to release as app on facebook
+              TODO: guide to release as app on facebook
     
     ## Deploy to Chrome
     
-          TODO: guide to release as a Chrome app
+              TODO: guide to release as a Chrome app
     
-          `.replace(/\n */g, '\n'));
+              `.replace(/\n */g, '\n'));
         });
     }
     
@@ -651,7 +633,7 @@ It is useful to have the sha-1 of the files, when uploading to github, as we can
         da.run(workerPid, 'da:subscribe', ['ui'], {pid: da.pid, name: 'appedit:ui-update'});
       })
       .then(() => workerExec(workerInitSource))
-      .then(() => runSaveCode(localStorage.getItem('appeditContent')));
+        .then(() => runSaveCode(localStorage.getItem('appeditContent')));
     }
     setTimeout(newWorker, 0);
     

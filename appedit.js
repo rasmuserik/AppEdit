@@ -15,35 +15,6 @@
 //
 // [Roadmap](https://github.com/solsort/AppEdit/milestones?direction=asc&sort=due_date) and [feedback/suggestions](https://github.com/solsort/AppEdit/issues/new) via github issues.
 //
-// Mindmap of what is needed before version 0.2:
-// 
-// - Editor
-//     - [x] vim commandbar
-//     - [ ] overlay with key-binding overview + toggle vim
-// - Libraries
-//     - [ ] Turtle graphics
-//     - [ ] Unit testing
-// - Examples/documentation
-//     - [ ] Better default code
-//     - [ ] Tutorial
-//     - [ ] Reread/document all libraries/dependencies
-// - Reun
-//     - [ ] require opt/version parameter
-//     - [ ] main executed as with node-modules
-// - Worker
-//     - [ ] Error-handling send to outer
-//     - [ ] Webworker keep-alive
-// - App-runner within editor
-//     - [ ] show errors instead of app, when they happens
-//     - [ ] console.log overlay
-// - Compatibilty
-//     - [ ] Check Edge
-//     - [ ] Check Firefox
-// - Misc
-//     - [ ] ability to save to org-repository
-//     - [ ] exports._meta instead of exports.meta
-//     - [x] Force https
-//
 // # Dependencies:
 //
 // [REUN](https://reun.solsort.com) - require/module-loader through unpkg
