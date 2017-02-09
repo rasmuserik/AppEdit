@@ -640,7 +640,7 @@ It is useful to have the sha-1 of the files, when uploading to github, as we can
     function workerExec(str) {
       return new Promise((resolve, reject) =>
           workerPid ? da
-          .call(workerPid, 'reun:run', str, location.href)
+          .call(workerPid, 'reun:run', str, {uri: location.href})
           .then(o => o ? resolve(o) : reject(o))
           : reject(null));
     }
