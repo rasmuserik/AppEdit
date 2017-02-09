@@ -16,6 +16,20 @@ body {
   margin: 0; padding: 0;
   color: #333;
 }
+.table-of-contents {
+  display: inline-block;
+    position: relative;
+  border: 1px solid black;
+  float: right;
+  border-radius: 3px;
+  max-width: 33%;
+  background: rgba(245,245,245,0.6);
+  z-index: 1;
+  padding: 2ex;
+  margin: 0ex 0ex 1ex 1ex;
+  overflow: hidden;
+  white-space: nowrap;
+}
 #topbar {
   height: 36px;
   text-align: left;
@@ -133,11 +147,11 @@ body {
       }
       .shortcut {
         display: inline-block;
-          width: 240px;
-            vertical-align: top;
-              margin: 5px;
-              text-align: left;
-                margin-bottom: 5px;
+        width: 240px;
+        vertical-align: top;
+        margin: 5px;
+        text-align: left;
+        margin-bottom: 5px;
       }
       .shortcut>i {
         font-style: normal;
@@ -276,38 +290,38 @@ document.write(
       <h1 style=clear:none;margin-top:10px>Help/Settings</h1>
 
       <div>
-      <div class=shortcut><i><b>Ctrl</b> + <b>S</b></i> Share / Save</div>
-      <div class=shortcut><i><b>Ctrl</b> + <b>E</b></i> Export to GitHub</div>
-      <div class=shortcut><i><b>Ctrl</b> + <b>H</b></i> Help / Settings</div>
-      <div class=shortcut><i><b>Ctrl</b> + <b>Q</b></i> Fold section header under cursor</div>
+        <div class=shortcut><i><b>Ctrl</b> + <b>S</b></i> Share / Save</div>
+        <div class=shortcut><i><b>Ctrl</b> + <b>E</b></i> Export to GitHub</div>
+        <div class=shortcut><i><b>Ctrl</b> + <b>H</b></i> Help / Settings</div>
+        <div class=shortcut><i><b>Ctrl</b> + <b>Q</b></i> Fold section header under cursor</div>
       </div>
 
       <p id=vim-mode style=user-select:none>
-        <br>
+      <br>
       <input id=vim-mode-checkbox type=checkbox>
       <b>Vim mode.</b>
-        <br>
+      <br>
       <input id=help-input style=display:none>
       </p>
 
       <div id=vim-help>
-      <div class=shortcut><i><b>Esc</b></i>Enter command mode</div>
-      <h3>Command mode:</h3>
+        <div class=shortcut><i><b>Esc</b></i>Enter command mode</div>
+        <h3>Command mode:</h3>
 
-      <p>Movement</p>
-      <div class=shortcut><i><b>H</b></i>Move left</div>
-      <div class=shortcut><i><b>J</b></i>Move down</div>
-      <div class=shortcut><i><b>K</b></i>Move up</div>
-      <div class=shortcut><i><b>L</b></i>Move right</div>
+        <p>Movement</p>
+        <div class=shortcut><i><b>H</b></i>Move left</div>
+        <div class=shortcut><i><b>J</b></i>Move down</div>
+        <div class=shortcut><i><b>K</b></i>Move up</div>
+        <div class=shortcut><i><b>L</b></i>Move right</div>
 
-      <p>Insert</p>
+        <p>Insert</p>
 
-      <div class=shortcut><i><b>I</b></i>Enter insert mode before cursor</div>
-      <div class=shortcut><i><b>Shift</b> + <b>I</b></i>Enter insert mode at beginning of line</div>
-      <div class=shortcut><i><b>A</b></i>Enter insert mode after cursor</div>
-      <div class=shortcut><i><b>Shift</b> + <b>A</b></i>Enter insert mode at end of line</div>
-      <div class=shortcut><i><b>Shift</b> + <b>O</b></i>Enter insert mode on new line above</div>
-      <div class=shortcut><i><b>O</b></i>Enter insert mode on new line below</div>
+        <div class=shortcut><i><b>I</b></i>Enter insert mode before cursor</div>
+        <div class=shortcut><i><b>Shift</b> + <b>I</b></i>Enter insert mode at beginning of line</div>
+        <div class=shortcut><i><b>A</b></i>Enter insert mode after cursor</div>
+        <div class=shortcut><i><b>Shift</b> + <b>A</b></i>Enter insert mode at end of line</div>
+        <div class=shortcut><i><b>Shift</b> + <b>O</b></i>Enter insert mode on new line above</div>
+        <div class=shortcut><i><b>O</b></i>Enter insert mode on new line below</div>
       </div>
     </div>
 

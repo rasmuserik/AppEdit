@@ -98,7 +98,6 @@ function loadFromGithub() {
 function read() {
   var code = localStorage.getItem('appeditContent');
   document.getElementById('app').innerHTML = 
-    '<div id="table-of-contents">TOC</div>' +
     markdown2html(js2markdown(code));
   setTimeout(() => {
     var str = '';
@@ -111,9 +110,10 @@ function read() {
       }
       str += '<a href="#' + hash + '">' + title + '</a><br>';
     });
-  document.getElementById('table-of-contents').innerHTML = 
-    '<p><strong>Table of contents:</strong></p>' + str;
-  console.log(str);
+  document.getElementById('app').innerHTML = 
+    document.getElementById('app').innerHTML.replace(
+        '</h1>',
+    '</h1><div class=table-of-contents><strong>Table of contents:</strong><br><br>' + str + '</div><br>' );
   }, 0);
 }
 
