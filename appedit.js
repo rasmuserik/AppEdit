@@ -640,7 +640,7 @@ setTimeout(newWorker, 0);
 function workerExec(str) {
   return new Promise((resolve, reject) =>
       workerPid ? da
-      .call(workerPid, 'reun:run', str, location.href)
+      .call(workerPid, 'reun:run', str, {uri: location.href})
       .then(o => o ? resolve(o) : reject(o))
       : reject(null));
 }
