@@ -16,6 +16,20 @@ body {
   margin: 0; padding: 0;
   color: #333;
 }
+.table-of-contents {
+  display: inline-block;
+    position: relative;
+  border: 1px solid black;
+  float: right;
+  border-radius: 3px;
+  max-width: 33%;
+  background: rgba(245,245,245,0.6);
+  z-index: 1;
+  padding: 2ex;
+  margin: 0ex 0ex 1ex 1ex;
+  overflow: hidden;
+  white-space: nowrap;
+}
 #topbar {
   height: 36px;
   text-align: left;
@@ -88,30 +102,77 @@ body {
   border: 10px solid white;
   vertical-align: top;
 }
-  @media (max-width: 800px) {
-    .pricing>div {
-      width: 99%;
-    }
-  }
-  .pricing>div>div {
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 10px;
-  }
-  .pricing h3 {
-    box-sizing: border-box;
-    border-bottom: 1px solid #ccc;
-    margin: 0 -10px 1em -10px;
-    background: white;
-    padding: 1ex;
-  }
-  code {
-    background: #eee;
-  }
-  pre {
-    padding: 1ex;
-    background: #eee;
-  }
+      .pricing>div>div {
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        padding: 10px;
+      }
+      .pricing h3 {
+        box-sizing: border-box;
+        border-bottom: 1px solid #ccc;
+        margin: 0 -10px 1em -10px;
+        background: white;
+        padding: 1ex;
+      }
+      code {
+        background: #eee;
+      }
+      pre {
+        padding: 1ex;
+        background: #eee;
+      }
+      .key {
+        display: inline-block;
+        vertical-align: top;
+        text-decoration: none;
+        font-size: 70%;
+        margin: 2px 1px 0px 1px;
+        padding: 2px 4px 2px 4px;
+        border: 1px solid black;
+        border-radius: 4px;
+      }
+      #help {
+        position: fixed;
+        top: 36px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 10;
+        background: rgba(240,240,240,0.95);
+        margin: 20px;
+        padding: 0px 10px 0px 10px;
+        overflow: auto;
+        box-shadow: 2px 2px 6px rgba(0,0,0,0.8);
+        text-align: center;
+      }
+      .shortcut {
+        display: inline-block;
+        width: 240px;
+        vertical-align: top;
+        margin: 5px;
+        text-align: left;
+        margin-bottom: 5px;
+      }
+      .shortcut>i {
+        font-style: normal;
+        display: inline-block;
+        float: left;
+        padding: 0px 10px 0px 0px;
+      }
+      .shortcut>i>b{
+        display: inline-block;
+        vertical-align: center;
+        text-decoration: none;
+        margin-top: 2px;
+        padding: 2px 6px 2px 5px;
+        border: 1px solid black;
+        border-radius: 4px;
+      }
+      @media (max-width: 800px) {
+        .pricing>div {
+          width: 99%;
+        }
+      }
     </style>
   </head>
   <body>
@@ -128,7 +189,7 @@ body {
         In the top-bar above:
         <ul>
           <li>You can <span class=topbar-item>Read</span> the source code / documentation for the current app. </li>
-          <li>You can <span class=topbar-item>Edit</span> the source code of the current app, and see the result live.</li>
+          <li>You can <span class=topbar-item>Edit</span> the source code of the current app, and see the result live. <br> Press <span class=key>Ctrl</span>+<span class=key>H</span> to view the help/settings when editing.</li>
           <li>You can run the <span class=topbar-item>App</span></li>
           <li>You can publish the app, and <span class=topbar-item>Share</span> the link that runs the current app</li>
         </ul>
@@ -221,7 +282,47 @@ document.write(
       <p>
       The subscription money will go back into further development of AppEdit, and its community. Details of accounting and usage of funds will be transparent / publicly available. <em>Link will be added here, when subscriptions starts.</em>
       </p>
+    </div>
+    <div id=help style=display:none>
+      <span style=font-size:20px;position:fixed;display:inline-block;top:64px;right:40px>
+        &#10006;
+      </span>
+      <h1 style=clear:none;margin-top:10px>Help/Settings</h1>
 
+      <div>
+        <div class=shortcut><i><b>Ctrl</b> + <b>S</b></i> Share / Save</div>
+        <div class=shortcut><i><b>Ctrl</b> + <b>E</b></i> Export to GitHub</div>
+        <div class=shortcut><i><b>Ctrl</b> + <b>H</b></i> Help / Settings</div>
+        <div class=shortcut><i><b>Ctrl</b> + <b>Q</b></i> Fold section header under cursor</div>
+      </div>
+
+      <p id=vim-mode style=user-select:none>
+      <br>
+      <input id=vim-mode-checkbox type=checkbox>
+      <b>Vim mode.</b>
+      <br>
+      <input id=help-input style=display:none>
+      </p>
+
+      <div id=vim-help>
+        <div class=shortcut><i><b>Esc</b></i>Enter command mode</div>
+        <h3>Command mode:</h3>
+
+        <p>Movement</p>
+        <div class=shortcut><i><b>H</b></i>Move left</div>
+        <div class=shortcut><i><b>J</b></i>Move down</div>
+        <div class=shortcut><i><b>K</b></i>Move up</div>
+        <div class=shortcut><i><b>L</b></i>Move right</div>
+
+        <p>Insert</p>
+
+        <div class=shortcut><i><b>I</b></i>Enter insert mode before cursor</div>
+        <div class=shortcut><i><b>Shift</b> + <b>I</b></i>Enter insert mode at beginning of line</div>
+        <div class=shortcut><i><b>A</b></i>Enter insert mode after cursor</div>
+        <div class=shortcut><i><b>Shift</b> + <b>A</b></i>Enter insert mode at end of line</div>
+        <div class=shortcut><i><b>Shift</b> + <b>O</b></i>Enter insert mode on new line above</div>
+        <div class=shortcut><i><b>O</b></i>Enter insert mode on new line below</div>
+      </div>
     </div>
 
     <footer id=loading>Loading, may take a while..</footer>
