@@ -649,7 +649,7 @@ It is useful to have the sha-1 of the files, when uploading to github, as we can
     self.onerror = function(msg, file, line, col, err) {
       err = err || new Error(msg); 
       console.log('onerror', msg, file, line, col, err);
-      var da = require('direape');
+      var da = require('direape@0.1');
       err = Object.assign({message: msg, file: file, line: line, col: col}, 
           da._jsonify(err)); 
       da.run(da.parent, 'appedit:worker-error', da._jsonify(err));
@@ -675,7 +675,7 @@ TODO ping/keepalive
       ss.set(['ui', 'hasError'], false);
       return workerExec(str).then(o => {
         localStorage.setItem('appeditMeta', JSON.stringify([o && metaValues(o)]));
-        workerExec(`var da = require('direape');
+        workerExec(`var da = require('direape@0.1');
             da.run(da.parent, 'appedit:ui-update', ['ui'], da.getJS(['ui']));`);
       });
     }
