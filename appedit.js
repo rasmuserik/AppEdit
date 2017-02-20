@@ -157,9 +157,30 @@ ss.ready(() => ss.rerun('route', () => {
      break;
     default:
      mainElem.appendChild(about);
+     aboutExamples();
   }
   ss.bodyElem('loading').style.display = 'none';
 }));
+
+// ## About
+
+function aboutExamples() {
+  var example = type => (name => 
+    ['a.example-link', 
+  { href: `https://appedit.solsort.com/?page=${type}&github=solsort/${name}` },
+  ['img', {src: `https://github.com/solsort/${name}/raw/master/icon.png`}]]);
+
+  ss.renderJsonml(['div',
+      ['h3', 'Demos / tutorials'],
+      ['h3', 'Function libraries'],
+      ['div'].concat(['solsort', 'fri', 'direape', 'reun'].map(example('read'))),
+      ['h3', 'Major Applications'],
+      example('read')('appedit'),
+  ],
+  document.getElementById('appedit-examples')
+  )
+
+}
 
 
 // ## Help + vim mode
