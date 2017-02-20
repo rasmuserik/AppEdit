@@ -173,16 +173,17 @@ body {
       </p>
       <script>
 document.write(
-    ['Read/js/gh/solsort/direape', 
-    'Read/js/gh/solsort/fri', 
-    'Read/js/gh/solsort/solsort', 
-    'Read/js/gh/solsort/appedit', 
-    'Read/js/gh/solsort/reun' 
+    ['page=Read&github=solsort/direape', 
+    'page=Read&github=solsort/fri', 
+    'page=Read&github=solsort/solsort', 
+    'page=Read&github=solsort/appedit', 
+    'page=Read&github=solsort/reun' 
     ].map(s =>
       '<a class=example-link ' +
       'href=?' + s + '>' +
       '<img src=https://github.com/' + 
-      s.split('/').slice(-2).join('/') + '/raw/master/icon.png ' +
+      s.replace(/.*=/, '')
+      + '/raw/master/icon.png ' +
       'class=example-link></a>'
       ).join(''));
       </script>

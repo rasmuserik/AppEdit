@@ -50,7 +50,9 @@ ss.ready(() => {
     var params = [];
     var route = ss.getJS('route');
     for(var k in route) {
-      params.push(uriStringify(k) + '=' + uriStringify(route[k]));
+      if(route[k] !== undefined) {
+        params.push(uriStringify(k) + '=' + uriStringify(route[k]));
+      }
     }
     return '?' + params.join('&');
   }
@@ -86,6 +88,12 @@ ss.ready(() => {
           location.href.replace(/[?].*.?/, '') + stateUrl()));
   }
 });
+
+// ## Error
+
+function error(e) {
+  ss.bodyElement('app').innerHTML = `<h1 style=background:red>${e}</h1>`;
+}
 
 // ## Routing
 //
@@ -135,6 +143,24 @@ ss.ready(() => {
       ss.renderJsonml(['nav', ['img', {src: 'icon.png'}]].concat(
           ['About', 'Read', 'Edit', 'App', 'Share'].map(link)),
         ss.bodyElement('topbar')));
+});
+
+// ## Load from github
+
+ss.ready(() => {
+  var repos = ss.getJS(['route', 'github']);
+  if(repos) {
+    ss.GET(`https://api.github.com/repos/${repos}/contents/${repos.replace(/.*[/]/, '')}.js`)
+      .then(o => {
+        ss.setJS('code', atob(JSON.parse(o).content));
+        localStorage.setItem('appeditContent', ss.getJS('code'));
+        ss.setJS(['route', 'github']);
+      }).catch(() => {
+        error('Error loading "' + repos + '" from GitHub');
+      });
+  } else {
+        ss.setJS('code', localStorage.getItem('appeditContent'));
+  }
 });
 
 // ## Non-code Roadmap.
