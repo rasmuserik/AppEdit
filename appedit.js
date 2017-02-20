@@ -15,7 +15,70 @@
 //
 // [Roadmap](https://github.com/solsort/AppEdit/milestones?direction=asc&sort=due_date) and [feedback/suggestions](https://github.com/solsort/AppEdit/issues/new) via github issues.
 //
-// # Dependencies:
+// ## Dependencies:
+
+exports._meta = {
+  title: 'AppEdit',
+  version: '0.2.0',
+  customIndexHtml: true
+};
+
+var ss = require('solsort', {version: '0.2'});
+var da = require('direape');
+da.testSuite('appedit');
+da.ready(() => da.runTests('appedit'));
+
+// ## Utilities
+
+ss.sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms || 0));
+
+// ## Routing
+//
+// ## Styling
+//
+// ### loadStyle
+
+ss.loadStyle = (name, style) => {
+  var elem = document.getElementById(name);
+  if(!document.getElementById(name)) {
+    elem = document.createElement('style');
+    elem.id = name;
+    document.head.appendChild(elem);
+  }
+  var str = '';
+  for(var selector in style) {
+    str += selector + '{';
+    for(var property in style[selector]) {
+      var value = style[selector][property];
+      if(typeof value === 'number') {
+        value = value + 'px';
+      }
+      str += property + ':' + value + ';';
+    }
+    str += '}';
+}
+elem.innerHTML = str;
+};
+
+if(da.isBrowser()) {
+  da.test('loadStyle', () => {
+    var testStyle = { 
+      '.testStyle': { background: 'red', width: 100 }, 
+      '.testStyle2': { }
+    };
+    Promise.resolve(ss.loadStyle('testStyle', testStyle))
+      .then(() => ss.sleep())
+      .then(() => da.assertEquals( 
+            document.getElementById('testStyle').innerHTML, 
+            '.testStyle{background:red;width:100px;}.testStyle2{}'));
+  });
+}
+
+
+
+// # old
+/*
+// ## Dependencies:
 //
 // [REUN](https://reun.solsort.com) - require/module-loader through unpkg
 //
@@ -24,20 +87,11 @@
 // [µBackend](https://mubackend.solsort.com) - minimal backend, used for github login
 //
 
-exports._meta = {
-  title: 'AppEdit',
-  version: '0.0.1',
-  customIndexHtml: true
-};
-
-
-var da = require('direape@0.1');
-var ss = require('solsort@0.1');
-var reun = require('reun@0.1');
+var reun = require('reun@0.2');
 var showdown = require('showdown@1.6.0');
 var slice = (a, start, end) => Array.prototype.slice.call(a, start, end);
 
-// # routing + load from github
+// ## routing + load from github
 //
 // Force https on appedit.solsort.com, as writing to github otherwise does not work.
 //
@@ -53,47 +107,47 @@ var route = location.search.slice(1).split('/');
 route[0] = route[0] || 'About';
 
 function main() {
-  (({
-    Export: exportToGithub,
-    Read: read,
-    Edit: edit,
-    App: app,
-    Share: share
-  })[route[0]]||(o=>0))();
+(({
+Export: exportToGithub,
+Read: read,
+Edit: edit,
+App: app,
+Share: share
+})[route[0]]||(o=>0))();
 }
 
 if(!self.document) {
-  undefined;
+undefined;
 } else if(location.hash.startsWith('#muBackendLoginToken=')) {
-  loggedIn();
+loggedIn();
 } else if(route[1] === 'js' && route[2] === 'gh') {
-  loadFromGithub();
+loadFromGithub();
 } else if(route[1] === 'js' && route[2] === 'cs') {
-  loadFromCodeStorage();
+loadFromCodeStorage();
 } else {
-  (document.getElementById('topbar'+route[0])||{}).className = 'topbar-active';
-  main();
-  document.getElementById('loading').remove();
+(document.getElementById('topbar'+route[0])||{}).className = 'topbar-active';
+main();
+document.getElementById('loading').remove();
 }
 
 function loadFromCodeStorage() {
-  ajax(`https://code-storage.solsort.com/${route[3]}`)
-    .then(o => {
-      localStorage.setItem('appeditContent', o);
-      location.search = location.search.replace(/\/.*/, '');
-    });
+ajax(`https://code-storage.solsort.com/${route[3]}`)
+.then(o => {
+localStorage.setItem('appeditContent', o);
+location.search = location.search.replace(/\/.*.?/, '');
+});
 }
 
 function loadFromGithub() {
-  ajax(`https://api.github.com/repos/${route[3]}/${route[4]}/contents/${route[4]}.js`)
-    .then(o => {
-      localStorage.setItem('github', JSON.stringify(o));
-      localStorage.setItem('appeditContent', atob(o.content));
-      location.search = location.search.replace(/\/.*/, '');
-    });
+ajax(`https://api.github.com/repos/${route[3]}/${route[4]}/contents/${route[4]}.js`)
+.then(o => {
+localStorage.setItem('github', JSON.stringify(o));
+localStorage.setItem('appeditContent', atob(o.content));
+location.search = location.search.replace(/\/.*.?/, '');
+});
 }
 
-// # Read
+// ## Read
 //
 function read() {
   var code = localStorage.getItem('appeditContent');
@@ -113,11 +167,11 @@ function read() {
   document.getElementById('app').innerHTML = 
     document.getElementById('app').innerHTML.replace(
         '</h1>',
-    '</h1><div class=table-of-contents><strong>Table of contents:</strong><br><br>' + str + '</div><br>' );
+        '</h1><div class=table-of-contents><strong>Table of contents:</strong><br><br>' + str + '</div><br>' );
   }, 0);
 }
 
-// # Edit
+// ## Edit
 //
 function loadCss(url) {
   var id = url.toLowerCase().replace(/[^a-z0-9]/g,'');
@@ -133,7 +187,7 @@ function loadCss(url) {
 self.loadcss = loadCss;
 
 
-// ## Default editor content
+// ### Default editor content
 
 if(!localStorage.getItem('appeditContent')) {
   localStorage.setItem('appeditContent',
@@ -159,7 +213,7 @@ if(!localStorage.getItem('appeditContent')) {
             '${Object.keys(require(\'lodash\')).join(\'<br>\')}\n' +
             '`);' );
 }
-// ## Codemirror
+// ### Codemirror
 
 var codemirror;
 var CodeMirror;
@@ -196,11 +250,11 @@ function edit() {
   window.onresize = edit;
 }
 
-// ## Custom folding
+// ### Custom folding
 
 function enableLiterateFolding() {
-  /* TODO: refactor: javascript-mode should have configurable fold-method, 
-   * and this shouldn't be called 'brace' */
+  // TODO: refactor: javascript-mode should have configurable fold-method, 
+  // and this shouldn't be called 'brace'
   CodeMirror.registerHelper('fold', 'brace', function(cm, start) {
     var level, end, maxDepth = 100, firstLine = cm.getLine(start.line), lastLine = cm.lastLine();
 
@@ -226,7 +280,7 @@ function enableLiterateFolding() {
   });
 }
 
-// ## Create codemirror element
+// ### Create codemirror element
 
 var codemirrorStyle = {
   position: 'absolute',
@@ -269,7 +323,7 @@ function createCodeMirror() {
 }
 
 
-// # Help/settings
+// ## Help/settings
 //
 function toggleVim(e) {
   var vimEnabled = localStorage.getItem('appEditVim');
@@ -306,15 +360,15 @@ setTimeout(() => {
   helpElem.onclick = hideHelp;
 }, 0);
 
-// # App
+// ## App
 //
 function app() {
   document.getElementById('app').innerHTML = '<div id=solsort-ui class=main>Starting app...</div>';
 }
 
-// # Share
+// ## Share
 //
-// ## Share page/document
+// ### Share page/document
 
 
 
@@ -372,11 +426,11 @@ function share() {
 
           TODO: guide to release as a Chrome app
 
-          `.replace(/\n */g, '\n'));
+          `.replace(/\n * ?/g, '\n'));
     });
 }
 
-// ## Generate files for export
+// ### Generate files for export
 
 function makeFiles(source, meta) {
   var files = [];
@@ -416,7 +470,7 @@ function sha1files(files) {
             resolve(Object.assign(o, {sha: sha}))))));
 }
 
-// ### Generate index.html from source
+// #### Generate index.html from source
 
 function makeIndexHtml(source, meta) {
   return `<!DOCTYPE html>
@@ -444,7 +498,7 @@ function makeIndexHtml(source, meta) {
     `;
 }
 
-// ### Generate README.md from source
+// #### Generate README.md from source
 
 function makeReadmeMd(source, meta) {
   var user = meta.githubUser;
@@ -453,7 +507,7 @@ function makeReadmeMd(source, meta) {
   var s = `<img src=https://raw.githubusercontent.com/${project}/master/icon.png width=96 height=96 align=right>\n\n`;
   if(meta.url) {
     s+= '[![website](https://img.shields.io/badge/website-' +
-        meta.url.replace(/.*[/][/]/, '').replace(/[/].*/, '') +
+        meta.url.replace(/.*[/][/]/, '').replace(/[/].*.?/, '') +
         `-blue.svg)](${meta.url})\n`;
   }
   s += `[![github](https://img.shields.io/badge/github-${project}-blue.svg)](https://github.com/${project})\n`;
@@ -468,15 +522,15 @@ function makeReadmeMd(source, meta) {
   return s;
 }
 
-// ## Export to github
+// ### Export to github
 
 
 function exportToGithub() {
   location.href = 'https://mubackend.solsort.com/auth/github?url=' +
-    location.href.replace(/[?#].*/, '') +
+    location.href.replace(/[?#].*.?/, '') +
     '&scope=public_repo';
   localStorage.setItem('appeditAction', 'export');
-  /* https://developer.github.com/v3/oauth/#scopes */
+  // https://developer.github.com/v3/oauth/#scopes 
 }
 
 function loggedIn() {
@@ -550,7 +604,7 @@ function loggedIn() {
       });
       return result;
     }).then(() => location.href =
-      location.href.replace(/[?#].*/, '?' + localStorage.getItem('appeditAfterExport') || ''))
+      location.href.replace(/[?#].*.?/, '?' + localStorage.getItem('appeditAfterExport') || ''))
       .catch(e => {
         if(e.constructor === XMLHttpRequest &&
             e.status === 200) {
@@ -588,9 +642,9 @@ function ajax(url, opt) {
   });
 }
 
-// # Utility code
+// ## Utility code
 //
-// ## General utility code
+// ### General utility code
 
 function js2markdown(src) {
   return ('\n'+src).replace(/\n/g, '\n    ').replace(/\n *[/][/] ?/g, '\n');
@@ -616,7 +670,7 @@ function sha1(str) {
     .then(bin2hex);
 }
 
-// ## Webworker setup
+// ### Webworker setup
 
 var workerPid, workerInitSource;
 function worker() {
@@ -658,7 +712,7 @@ self.onerror = function(msg, file, line, col, err) {
 
 // TODO ping/keepalive
 //
-// ## Handlers
+// ### Handlers
 
 da.handle('appedit:worker-error', e => {
   ss.set(['ui', 'hasError'], true);
@@ -668,7 +722,7 @@ da.handle('appedit:ui-update', (path, content) => {
   ss.set(path, content);
 });
 
-// ## Manage code
+// ### Manage code
 //
 function runSaveCode(str) {
   localStorage.setItem('appeditContent', str);
@@ -686,7 +740,7 @@ function setCode(str) {
   }
 }
 
-// ## Code export
+// ### Code export
 
 function metaValues(o) {
   var meta = o._meta || {};
@@ -704,8 +758,9 @@ function metaValues(o) {
   return meta;
 }
 
-// # Code for experimenting
+// ## Code for experimenting
 
+*/
 // # Non-code Roadmap.
 //
 // - Growth
@@ -726,13 +781,13 @@ function metaValues(o) {
 //     - Professional - for commercial projects, includes infrastructure non-GPL-license.
 //   - Maybe 50% subscription fee back to community/growth: bug bounties, (recursive) referral (for example identify via coupon for first month free, limit such as 100), competition-prices, contributor-prizes, ...
 //
-// # License
+// ## License
 //
 // This software is copyrighted solsort.com ApS, and available under GPLv3, as well as proprietary license upon request.
 //
 // Versions older than 10 years also fall into the public domain.
 //
-// # Changelog
+// ## Changelog
 //
-// ## 2017-01-01 Project started
+// ### 2017-01-01 Project started
 //

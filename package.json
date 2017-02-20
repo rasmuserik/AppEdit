@@ -1,0 +1,30 @@
+{
+  "name": "appedit",
+  "version": "0.0.1",
+  "description": "AppEdit",
+  "main": "appedit.js",
+  "scripts": {
+    "test": "true"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/appedit/solsort"
+  },
+  "keywords": [],
+  "author": "RasmusErik / appedit.com",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/appedit/solsort/issues"
+  },
+  "homepage": "http://appedit.solsort.com",
+  "dependencies": {
+    "direape": "^0.2.8",
+    "reun": "^0.2.5",
+    "solsort": "^0.2.0"
+  },
+  "devDependencies": {
+    "eslint": "^3.15.0",
+    "live-server": "^1.2.0",
+    "uglify-js-harmony": "^2.6.2"
+  }
+}

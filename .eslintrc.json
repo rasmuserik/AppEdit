@@ -12,10 +12,7 @@
   "rules": {
     "no-console": "off",
     "no-unused-vars": "off",
-    "indent": [
-      "warn",
-      2
-    ],
+    "indent": 0,
     "linebreak-style": [
       "warn",
       "unix"
