@@ -29,8 +29,10 @@ You can try it live at https://appedit.solsort.com/.
     da.ready(() => da.runTests('appedit'));
     
 ## Utilities
+
+TODO move to solsort
     
-    ss.domElement = (id, type) => {
+    ss.bodyElement = (id, type) => {
       type = type || 'div';
       var elem = document.getElementById(id);
       if(!elem) {
@@ -40,6 +42,50 @@ You can try it live at https://appedit.solsort.com/.
       }
       return elem;
     };
+    
+### URI Routing 
+    ss.ready(() => {
+    
+      function stateUrl() {
+        var params = [];
+        var route = ss.getJS('route');
+        for(var k in route) {
+          params.push(uriStringify(k) + '=' + uriStringify(route[k]));
+        }
+        return '?' + params.join('&');
+      }
+    
+      function uriParse(s) {
+        s = decodeURIComponent(s);
+        try { s = JSON.parse(s); } catch(_) { true; }
+        return s;
+      }
+    
+      function uriStringify(s) {
+        try {
+          JSON.parse(s);
+          s = JSON.stringify(s);
+        } catch(_) { true; }
+        return encodeURIComponent(s);
+      }
+    
+      if(ss.isBrowser()) {
+        var search = location.search.slice(1);
+        if(search) {
+          var route = {};
+          search = search.split('&').map(s => s.split('='));
+          for(var kv of search) {
+            var k = kv[0], v = kv[1];
+            route[uriParse(k)] = uriParse(v);
+          }
+          ss.setJS('route', route);
+        }
+    
+        ss.rerun('ss:route-url', () => 
+            history.replaceState(null, null, 
+              location.href.replace(/[?].*.?/, '') + stateUrl()));
+      }
+    });
     
 ## Routing
 
@@ -81,17 +127,17 @@ You can try it live at https://appedit.solsort.com/.
       var link = (name) => ['a', { href: '#',
         onClick: 
           ss.event('navigate', {preventDefault:true,data:name.toLowerCase()}),
-          class: name.toLowerCase() === ss.getJS(['route', 'page']) 
-                 ? 'selected' : '',
+        class: name.toLowerCase() === ss.getJS(['route', 'page']) 
+               ? 'selected' : '',
       }, name];
     
       ss.rerun('topbar', () =>
           ss.renderJsonml(['nav', ['img', {src: 'icon.png'}]].concat(
               ['About', 'Read', 'Edit', 'App', 'Share'].map(link)),
-            ss.domElement('topbar')));
+            ss.bodyElement('topbar')));
     });
     
-# Non-code Roadmap.
+## Non-code Roadmap.
 
 - Growth
   - Workshops
@@ -116,8 +162,4 @@ You can try it live at https://appedit.solsort.com/.
 This software is copyrighted solsort.com ApS, and available under GPLv3, as well as proprietary license upon request.
 
 Versions older than 10 years also fall into the public domain.
-
-## Changelog
-
-### 2017-01-01 Project started
 
