@@ -123,10 +123,15 @@ ss.ready(() => ss.loadStyle('main-style',{
 //
 ss.setJS(['route', 'page'], 'about');
 var about;
+var shareElem;
 ss.ready(() => ss.rerun('route', () => {
   if(!about) {
     about = document.getElementById('about');
     about.remove();
+  }
+  if(!shareElem) {
+    shareElem = document.getElementById('share');
+    shareElem.remove();
   }
   ss.bodyElem('codemirror-container').style.display = 'none';
   var mainElem = ss.bodyElem('appedit-main-app');
@@ -146,6 +151,10 @@ ss.ready(() => ss.rerun('route', () => {
       Promise.resolve(ss.sleep(0))
         .then(() => ss.eval(createEditor));
       break;
+    case 'share':
+     mainElem.appendChild(shareElem);
+     share();
+     break;
     default:
      mainElem.appendChild(about);
   }
@@ -164,7 +173,9 @@ ss.ready(() => {
 
 // ## Vim mode
 
-ss.setJS('settings', JSON.parse(localStorage.getItem('appeditSettings')));
+if(ss.isBrowser()) {
+  ss.setJS('settings', JSON.parse(localStorage.getItem('appeditSettings')));
+}
 
 ss.ready(() => {
   ss.bodyElem('appedit-vim-mode').onclick = (e) => {
@@ -183,11 +194,21 @@ ss.ready(() => {
       codemirror().setOption('keyMap', enabled ? 'vim' : 'default');
     }
     document.getElementById('appedit-vim-help').style.display =
-            enabled ? 'inline' : 'none';
+      enabled ? 'inline' : 'none';
 
   });
 });
 
+// ## Share
+//
+function share() {
+  ss.ajax('https://code-storage.solsort.com/', {data: ss.getJS('code')})
+    .then(id => {
+      ss.renderJsonml(['a', 
+          {href: `https://appedit.solsort.com/?page=read&sourceHash=${id}`},
+          id], document.getElementById('appedit-share-buttons'));
+    });
+}
 // ## Read
 //
 function read() {
@@ -267,11 +288,21 @@ ss.ready(() => {
         ss.bodyElem('topbar')));
 });
 
-// ## Load from github
+// ## Load file from network
 
 ss.ready(() => {
   var repos = ss.getJS(['route', 'github']);
-  if(repos) {
+  var sourceHash = ss.getJS(['route', 'sourceHash']);
+  if(sourceHash) {
+    ss.GET('https://code-storage.solsort.com/' + sourceHash)
+      .then(o => {
+        ss.setJS('code', o);
+        localStorage.setItem('appeditContent', ss.getJS('code'));
+        ss.setJS(['route', 'sourceHash']);
+      }).catch(() => {
+        error('Error loading "' + repos + '" from GitHub');
+      });
+  } else if(repos) {
     ss.GET(`https://api.github.com/repos/${repos}/contents/${repos.replace(/.*[/]/, '')}.js`)
       .then(o => {
         ss.setJS('code', atob(JSON.parse(o).content));
