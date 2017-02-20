@@ -32,7 +32,22 @@ da.ready(() => da.runTests('appedit'));
 //
 // TODO move to solsort
 
-ss.bodyElement = (id, type) => {
+// ### `loadCss(url)`
+ss.loadCss = (url) => {
+  var id = url.toLowerCase().replace(/[^a-z0-9]/g,'');
+  var elem;
+  if(!document.getElementById(id)) {
+    elem = document.createElement('link');
+    elem.rel = 'stylesheet';
+    elem.id = id;
+    elem.href = url;
+    document.head.appendChild(elem);
+  }
+};
+
+// ### `bodyElem(id, type)`
+//
+ss.bodyElem = (id, type) => {
   type = type || 'div';
   var elem = document.getElementById(id);
   if(!elem) {
@@ -92,23 +107,47 @@ ss.ready(() => {
 // ## Error
 
 function error(e) {
-  ss.bodyElement('app').innerHTML = `<h1 style=background:red>${e}</h1>`;
+  ss.bodyElem('main').innerHTML = `<h1 style=background:red>${e}</h1>`;
 }
 
+// ## Main styling
+ss.ready(() => ss.loadStyle('main-style',{
+  '#appedit-main-app': {
+    display: 'inline-block',
+    position: 'absolute',
+    top: 36, left: 0, right: 0, bottom: 0,
+    overflow: 'auto',
+  }
+}));
 // ## Routing
 //
 ss.setJS(['route', 'page'], 'about');
-ss.ready(() => ss.rerun('route-log', () => {
-  ss.bodyElement('about').style.display = 'none';
+var about;
+ss.ready(() => ss.rerun('route', () => {
+  if(!about) {
+    about = document.getElementById('about');
+    about.remove();
+  }
+  ss.bodyElem('codemirror-container').style.display = 'none';
+  var mainElem = ss.bodyElem('appedit-main-app');
+  mainElem.style.left = 0;
+  mainElem.innerHTML = '';
+
   switch(ss.getJS(['route', 'page'])) {
     case 'read':
-      read().then(str => ss.bodyElement('app').innerHTML = str);
+      read().then(str => mainElem.innerHTML = str);
+      break;
+    case 'edit':
+      ss.bodyElem('codemirror-container').style.display = 'inline';
+      mainElem.style.left = '60%';
+      read().then(str => mainElem.innerHTML = str);
+      Promise.resolve(ss.sleep(0))
+        .then(() => ss.eval(createEditor));
       break;
     default:
-      ss.bodyElement('app').innerHTML = '';
-      ss.bodyElement('about').style.display = 'inline';
+     mainElem.appendChild(about);
   }
-  ss.bodyElement('loading').style.display = 'none';
+  ss.bodyElem('loading').style.display = 'none';
 }));
 
 
@@ -116,10 +155,9 @@ ss.ready(() => ss.rerun('route-log', () => {
 //
 function read() {
   var code = ss.getJS('code') || '';
-  return Promise.resolve(ss.eval((r, e, module) => {
-    module.exports = markdown2html(js2markdown(code))
-  }))
-  .then(html => addToc(html));
+  return Promise.resolve(ss.eval((r, e, module) => 
+        module.exports = markdown2html(js2markdown(code))))
+    .then(html => addToc(html));
 }
 
 function js2markdown(src) {
@@ -132,17 +170,17 @@ function markdown2html(markdown) {
 }
 
 function addToc(html) {
-    var str = '';
-    !html.replace(
-        /<[hH]([123456])[^>]*?id="?([^> "]*)[^>]*>(.*)<[/][hH][123456]/g,
-    function(_, level, hash, title) {
-      for(var i = 1; i < level; ++i) {
-        str += '&nbsp;|&nbsp;&nbsp;';
-      }
-      str += '<a href="#' + hash + '">' + title + '</a><br>';
-    });
-    return html.replace('</h1>',
-        '</h1><div class=table-of-contents><strong>Table of contents:</strong><br><br>' + str + '</div><br>' );
+  var str = '';
+  !html.replace(
+      /<[hH]([123456])[^>]*?id="?([^> "]*)[^>]*>(.*)<[/][hH][123456]/g,
+  function(_, level, hash, title) {
+    for(var i = 1; i < level; ++i) {
+      str += '&nbsp;|&nbsp;&nbsp;';
+    }
+    str += '<a href="#' + hash + '">' + title + '</a><br>';
+  });
+  return html.replace('</h1>',
+      '</h1><div class=table-of-contents><strong>Table of contents:</strong><br><br>' + str + '</div><br>' );
 }
 
 
@@ -189,7 +227,7 @@ ss.ready(() => {
   ss.rerun('topbar', () =>
       ss.renderJsonml(['nav', ['img', {src: 'icon.png'}]].concat(
           ['About', 'Read', 'Edit', 'App', 'Share'].map(link)),
-        ss.bodyElement('topbar')));
+        ss.bodyElem('topbar')));
 });
 
 // ## Load from github
@@ -209,6 +247,115 @@ ss.ready(() => {
     ss.setJS('code', localStorage.getItem('appeditContent'));
   }
 });
+
+// ## CodeMirror
+
+ss.ready(() => ss.loadStyle('codemirror',{
+  '#codemirror-container': {
+    marginTop: 0,
+    position: 'absolute',
+    display: 'inline-block',
+    top: 36, left: 0, right: '40%', bottom: 0,
+  },
+  '#codemirror': {
+    height: '100%'
+  }
+
+}));
+
+var codemirror;
+
+function createEditor() {
+  if(codemirror) {
+    return;
+  }
+  var container = ss.bodyElem('codemirror-container');
+  container.innerHTML = '<h1>Loading editor...</h1>';
+
+  ss.loadCss('//unpkg.com/codemirror/lib/codemirror.css');
+  ss.loadCss('//unpkg.com/codemirror/addon/lint/lint.css');
+  ss.loadCss('//unpkg.com/codemirror/addon/dialog/dialog.css');
+  ss.loadCss('//unpkg.com/codemirror/addon/fold/foldgutter.css');
+  require('codemirror/lib/codemirror');
+  require('codemirror/addon/runmode/runmode.js');
+  require('codemirror/addon/runmode/colorize.js');
+  require('codemirror/addon/dialog/dialog.js');
+  require('codemirror/addon/fold/foldcode.js');
+  require('codemirror/addon/fold/foldgutter.js');
+  require('codemirror/addon/lint/lint.js');
+  require('codemirror/addon/lint/javascript-lint.js');
+  require('codemirror/keymap/vim.js');
+  require('codemirror/mode/javascript/javascript.js');
+  self.JSHINT = require('jshint/dist/jshint.js').JSHINT;
+  enableLiterateFolding();
+
+  ss.nextTick(()=> {
+    codemirror = require('codemirror')(
+        function(elem) {
+          elem.id = 'codemirror';
+          container.innerHTML = '';
+          container.appendChild(elem);
+        },
+        {
+          mode: 'javascript',
+          extraKeys: {
+            'Ctrl-E': () => {
+              localStorage.setItem('appeditAfterExport', 'Edit');
+              location.search = '?Export';
+            },
+            'Ctrl-S': () => location.search = '?Share',
+            'Ctrl-Q': (cm) => cm.foldCode(cm.getCursor()),
+            //'Ctrl-H': showHelp
+          },
+          lineWrapping: true,
+          keyMap: 'vim',
+          lineNumbers: true,
+          foldGutter: true,
+          gutters: ['CodeMirror-lint-markers', 'CodeMirror-linenumbers',
+          'CodeMirror-foldgutter'],
+          lint: {esversion: 6},
+          value: localStorage.getItem('appeditContent')
+        });
+    codemirror.on('changes', function(o) {
+      var content = o.getValue();
+      ss.setJS('code', content);
+    });
+    codemirror.focus();
+
+  });
+
+  // ### Custom folding
+
+  function enableLiterateFolding() {
+    var CodeMirror = require('codemirror');
+    /* TODO: refactor: javascript-mode should have configurable fold-method, 
+     * and this shouldn't be called 'brace' */
+    CodeMirror.registerHelper('fold', 'brace', function(cm, start) {
+      var level, end, maxDepth = 100, firstLine = cm.getLine(start.line), lastLine = cm.lastLine();
+
+      function headerLevel(line) {
+        if (!line) return maxDepth;
+        var match = line.match(/[/][/] #+/);
+        return match ? match[0].length - 3 : maxDepth;
+      }
+
+      level = headerLevel(firstLine);
+      if (level === maxDepth) return undefined;
+
+      for (end = start.line + 1; end < lastLine; ++end) {
+        if (headerLevel(cm.getLine(end + 1)) <= level) {
+          break;
+        }
+      }
+
+      return {
+        from: CodeMirror.Pos(start.line, cm.getLine(start.line).length),
+        to: CodeMirror.Pos(end, cm.getLine(end).length)
+      };
+    });
+  }
+}
+
 
 // ## Non-code Roadmap.
 //
