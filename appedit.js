@@ -98,7 +98,52 @@ function error(e) {
 // ## Routing
 //
 ss.setJS(['route', 'page'], 'about');
-ss.rerun('route-log', () => console.log('route', ss.getJS('route')));
+ss.ready(() => ss.rerun('route-log', () => {
+  ss.bodyElement('about').style.display = 'none';
+  switch(ss.getJS(['route', 'page'])) {
+    case 'read':
+      read().then(str => ss.bodyElement('app').innerHTML = str);
+      break;
+    default:
+      ss.bodyElement('app').innerHTML = '';
+      ss.bodyElement('about').style.display = 'inline';
+  }
+}));
+
+// ## Read
+//
+function read() {
+  var code = ss.getJS('code') || '';
+  return Promise.resolve(ss.eval((r, e, module) => {
+    module.exports = markdown2html(js2markdown(code))
+  }))
+  .then(html => addToc(html));
+}
+
+function js2markdown(src) {
+  return ('\n'+src).replace(/\n/g, '\n    ').replace(/\n *[/][/] ?/g, '\n');
+}
+
+function markdown2html(markdown) {
+  return (new (require('showdown@1.6.0')).Converter())
+    .makeHtml(markdown);
+}
+
+function addToc(html) {
+    var str = '';
+    !html.replace(
+        /<[hH]([123456])[^>]*?id="?([^> "]*)[^>]*>(.*)<[/][hH][123456]/g,
+    function(_, level, hash, title) {
+      for(var i = 1; i < level; ++i) {
+        str += '&nbsp;|&nbsp;&nbsp;';
+      }
+      str += '<a href="#' + hash + '">' + title + '</a><br>';
+    });
+    return html.replace('</h1>',
+        '</h1><div class=table-of-contents><strong>Table of contents:</strong><br><br>' + str + '</div><br>' );
+}
+
+
 
 // ## Navigation bar
 
@@ -159,7 +204,7 @@ ss.ready(() => {
         error('Error loading "' + repos + '" from GitHub');
       });
   } else {
-        ss.setJS('code', localStorage.getItem('appeditContent'));
+    ss.setJS('code', localStorage.getItem('appeditContent'));
   }
 });
 
