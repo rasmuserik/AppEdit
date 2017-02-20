@@ -132,6 +132,8 @@ TODO move to solsort
       var mainElem = ss.bodyElem('appedit-main-app');
       mainElem.style.left = 0;
       mainElem.innerHTML = '';
+      ss.bodyElem('appedit-help').style.display = 
+        ss.getJS(['ui', 'show-help']) ? 'inline' : 'none';
     
       switch(ss.getJS(['route', 'page'])) {
         case 'read':
@@ -150,6 +152,41 @@ TODO move to solsort
       ss.bodyElem('loading').style.display = 'none';
     }));
     
+    
+## Help + vim mode
+    
+    ss.ready(() => {
+      ss.bodyElem('appedit-help').onclick = () => {
+        ss.setJS(['ui', 'show-help'], false);
+        codemirror().focus();
+      };
+    });
+    
+## Vim mode
+    
+    ss.setJS('settings', JSON.parse(localStorage.getItem('appeditSettings')));
+    
+    ss.ready(() => {
+      ss.bodyElem('appedit-vim-mode').onclick = (e) => {
+        ss.setJS(['settings', 'vim'],
+            !ss.getJS(['settings', 'vim']));
+        e.stopPropagation();
+        localStorage.setItem('appeditSettings', 
+            JSON.stringify(ss.getJS('settings')));
+        codemirror().focus();
+      };
+    
+      ss.rerun('appedit:vim', () => {
+        var enabled = ss.getJS(['settings', 'vim']);
+        document.getElementById('appedit-vim-checkbox').checked = enabled;
+        if(codemirror()) {
+          codemirror().setOption('keyMap', enabled ? 'vim' : 'default');
+        }
+        document.getElementById('appedit-vim-help').style.display =
+                enabled ? 'inline' : 'none';
+    
+      });
+    });
     
 ## Read
 
@@ -263,10 +300,14 @@ TODO move to solsort
     
     }));
     
-    var codemirror;
+    var _codemirror;
+    
+    function codemirror() {
+      return _codemirror;
+    }
     
     function createEditor() {
-      if(codemirror) {
+      if(codemirror()) {
         return;
       }
       var container = ss.bodyElem('codemirror-container');
@@ -290,7 +331,7 @@ TODO move to solsort
       enableLiterateFolding();
     
       ss.nextTick(()=> {
-        codemirror = require('codemirror')(
+        _codemirror = require('codemirror')(
             function(elem) {
               elem.id = 'codemirror';
               container.innerHTML = '';
@@ -305,10 +346,12 @@ TODO move to solsort
                 },
                 'Ctrl-S': () => location.search = '?Share',
                 'Ctrl-Q': (cm) => cm.foldCode(cm.getCursor()),
-'Ctrl-H': showHelp
+                'Ctrl-H': () => 
+                  ss.setJS(['ui', 'show-help'],
+                      !ss.getJS(['ui', 'show-help']))
               },
               lineWrapping: true,
-              keyMap: 'vim',
+              keyMap: ss.getJS(['settings', 'vim']) ? 'vim' : 'default',
               lineNumbers: true,
               foldGutter: true,
               gutters: ['CodeMirror-lint-markers', 'CodeMirror-linenumbers',
@@ -316,11 +359,11 @@ TODO move to solsort
               lint: {esversion: 6},
               value: localStorage.getItem('appeditContent')
             });
-        codemirror.on('changes', function(o) {
+        codemirror().on('changes', function(o) {
           var content = o.getValue();
           ss.setJS('code', content);
         });
-        codemirror.focus();
+        codemirror().focus();
     
       });
     
