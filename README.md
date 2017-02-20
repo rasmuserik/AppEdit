@@ -128,6 +128,7 @@ TODO move to solsort
 TODO: move all state into ss.set/get
 TODO: ss.get/ss.set alias
 TODO: ss.get('foo.bar');
+TODO: ss.rerun does not fire when parent is changed...
       if(!about) {
         about = document.getElementById('about');
         about.remove();
@@ -148,21 +149,20 @@ TODO: ss.get('foo.bar');
           read().then(str => mainElem.innerHTML = str);
           break;
         case 'edit':
-    app();
           ss.bodyElem('codemirror-container').style.display = 'inline';
           mainElem.style.left = '60%';
     read().then(str => mainElem.innerHTML = str);
           mainElem.innerHTML = '<div id=solsort-ui></div>';
-          ss.nextTick(() => ss.html(() => 'hi'));
+          ss.nextTick(app);
           Promise.resolve(ss.sleep(0))
-            .then(() => ss.html(() => ['h1', 'Hello']))
             .then(() => ss.eval(createEditor));
           if(codemirror()) {
             codemirror().focus();
           }
           break;
         case 'app':
-     app();
+          mainElem.innerHTML = '<div id=solsort-ui></div>';
+          ss.nextTick(app);
           break;
         case 'share':
          mainElem.appendChild(shareElem);
@@ -185,12 +185,8 @@ TODO: ss.get('foo.bar');
       return Promise.resolve(ss.spawn())
         .then(childPid => {
           child = childPid;
-          ss.call(child, 'reun:eval', `
-              console.log('hello from thread');
-          `);
-
-TODO: setup mirroring of `['ui', 'html']
-
+          ss.call(child, 'reun:eval', 'require("solsort")')
+              .then(() => ss.call(child, 'fri:subscribe', ss.pid, 'fri:set', ['ui', 'html']));
         });
     }
     
