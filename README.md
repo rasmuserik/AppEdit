@@ -108,7 +108,9 @@ TODO move to solsort
           ss.bodyElement('app').innerHTML = '';
           ss.bodyElement('about').style.display = 'inline';
       }
+      ss.bodyElement('loading').style.display = 'none';
     }));
+    
     
 ## Read
 

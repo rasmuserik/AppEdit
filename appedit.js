@@ -108,7 +108,9 @@ ss.ready(() => ss.rerun('route-log', () => {
       ss.bodyElement('app').innerHTML = '';
       ss.bodyElement('about').style.display = 'inline';
   }
+  ss.bodyElement('loading').style.display = 'none';
 }));
+
 
 // ## Read
 //
