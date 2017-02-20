@@ -125,6 +125,9 @@ ss.setJS(['route', 'page'], 'about');
 var about;
 var shareElem;
 ss.ready(() => ss.rerun('route', () => {
+  // TODO: move all state into ss.set/get
+  // TODO: ss.get/ss.set alias
+  // TODO: ss.get('foo.bar');
   if(!about) {
     about = document.getElementById('about');
     about.remove();
@@ -145,11 +148,21 @@ ss.ready(() => ss.rerun('route', () => {
       read().then(str => mainElem.innerHTML = str);
       break;
     case 'edit':
+ //     app();
       ss.bodyElem('codemirror-container').style.display = 'inline';
       mainElem.style.left = '60%';
-      read().then(str => mainElem.innerHTML = str);
+ //     read().then(str => mainElem.innerHTML = str);
+      mainElem.innerHTML = '<div id=solsort-ui></div>';
+      ss.nextTick(() => ss.html(() => 'hi'));
       Promise.resolve(ss.sleep(0))
+        .then(() => ss.html(() => ['h1', 'Hello']))
         .then(() => ss.eval(createEditor));
+      if(codemirror()) {
+        codemirror().focus();
+      }
+      break;
+    case 'app':
+//      app();
       break;
     case 'share':
      mainElem.appendChild(shareElem);
@@ -162,23 +175,52 @@ ss.ready(() => ss.rerun('route', () => {
   ss.bodyElem('loading').style.display = 'none';
 }));
 
+// ## App
+
+var child;
+function appProcess() {
+  if(child) {
+    return child;
+  }
+  return Promise.resolve(ss.spawn())
+    .then(childPid => {
+      child = childPid;
+      ss.call(child, 'reun:eval', `
+          console.log('hello from thread');
+      `);
+      //
+      // TODO: setup mirroring of `['ui', 'html']
+      //
+    });
+}
+
+function app() {
+  ss.rerun('appedit:app', () => {
+    console.log('child', child);
+    var code = ss.getJS('code');
+    Promise.resolve(appProcess())
+      .then(() => ss.call(child, 'reun:eval', code))
+      .then(result => console.log('child-result:', result));
+  });
+}
+
+
 // ## About
 
 function aboutExamples() {
   var example = type => (name => 
-    ['a.example-link', 
-  { href: `https://appedit.solsort.com/?page=${type}&github=solsort/${name}` },
-  ['img', {src: `https://github.com/solsort/${name}/raw/master/icon.png`}]]);
+      ['a.example-link', 
+      { href: `https://appedit.solsort.com/?page=${type}&github=solsort/${name}` },
+      ['img', {src: `https://github.com/solsort/${name}/raw/master/icon.png`}]]);
 
   ss.renderJsonml(['div',
       ['h3', 'Demos / tutorials'],
+      ['div'].concat(['hello-world-appedit'].map(example('read'))),
       ['h3', 'Function libraries'],
       ['div'].concat(['solsort', 'fri', 'direape', 'reun'].map(example('read'))),
       ['h3', 'Major Applications'],
       example('read')('appedit'),
-  ],
-  document.getElementById('appedit-examples')
-  )
+  ], document.getElementById('appedit-examples'));
 
 }
 
