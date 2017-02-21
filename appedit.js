@@ -28,88 +28,7 @@ var da = require('direape');
 da.testSuite('appedit');
 da.ready(() => da.runTests('appedit'));
 
-// ## Utilities
-//
-// TODO move to solsort
-
-// ### `loadCss(url)`
-
-ss.loadCss = (url) => {
-  var id = url.toLowerCase().replace(/[^a-z0-9]/g,'');
-  var elem;
-  if(!document.getElementById(id)) {
-    elem = document.createElement('link');
-    elem.rel = 'stylesheet';
-    elem.id = id;
-    elem.href = url;
-    document.head.appendChild(elem);
-  }
-};
-
-// ### `bodyElem(id, type)`
-//
-ss.bodyElem = (id, type) => {
-  type = type || 'div';
-  var elem = document.getElementById(id);
-  if(!elem) {
-    elem = document.createElement(type);
-    elem.id = id;
-    document.body.appendChild(elem);
-  }
-  return elem;
-};
-
-// ### URI Routing 
-ss.ready(() => {
-
-  function stateUrl() {
-    var params = [];
-    var route = ss.getJS('route');
-    for(var k in route) {
-      if(route[k] !== undefined) {
-        params.push(uriStringify(k) + '=' + uriStringify(route[k]));
-      }
-    }
-    return '?' + params.join('&');
-  }
-
-  function uriParse(s) {
-    s = decodeURIComponent(s);
-    try { s = JSON.parse(s); } catch(_) { true; }
-    return s;
-  }
-
-  function uriStringify(s) {
-    try {
-      JSON.parse(s);
-      s = JSON.stringify(s);
-    } catch(_) { true; }
-    return encodeURIComponent(s);
-  }
-
-  if(ss.isBrowser()) {
-    var search = location.search.slice(1);
-    if(search) {
-      var route = {};
-      search = search.split('&').map(s => s.split('='));
-      for(var kv of search) {
-        var k = kv[0], v = kv[1];
-        route[uriParse(k)] = uriParse(v);
-      }
-      ss.setJS('route', route);
-    }
-
-    ss.rerun('ss:route-url', () => 
-        history.replaceState(null, null, 
-          location.href.replace(/[?].*.?/, '') + stateUrl()));
-  }
-});
-
-// ## Routing / Main entry
-//
-var aboutElem, shareElem;
-//
-// ### Main
+// ## Main
 
 function main() {
   // TODO: ss.html should also accept non-fn
@@ -122,7 +41,7 @@ function main() {
 
   switch(ss.getJS(['route', 'page'])) {
     case 'read':
-      read()
+      read();
       break;
     case 'edit':
       ss.eval(edit);
@@ -138,95 +57,35 @@ function main() {
   }
 }
 
-// ### Initialisation
-
-ss.setJS(['route', 'page'], 'about');
-
-ss.ready(() => {
-  loadSourceCode()
-
-  ss.setJS('settings', JSON.parse(localStorage.getItem('appeditSettings')));
-
-  ss.loadStyle('main-style',{
-    '#appedit-main-app': {
-      display: 'inline-block',
-      position: 'absolute',
-      top: 36, left: 0, right: 0, bottom: 0,
-      overflow: 'auto',
-    }
-  })
-
-  aboutElem = document.getElementById('about');
-  aboutElem.remove();
-
-  shareElem = document.getElementById('share');
-  shareElem.remove();
-
-  ss.bodyElem('loading').style.display = 'none';
-  ss.rerun('route', main);
-
-});
-
 // ### UI Reset
 
 function uiReset() {
   ss.bodyElem('appedit-help').style.display = 'none';
   ss.bodyElem('codemirror-container').style.display = 'none';
-  var mainElem = ss.bodyElem('appedit-main-app');
-  mainElem.style.left = 0;
-  mainElem.innerHTML = '';
+  ss.bodyElem('appedit-main-app').style.left = 0;
+  ss.bodyElem('appedit-main-app').innerHTML = '';
 
-}
-
-// ### Source code loading
-
-function loadSourceCode() {
-  var repos = ss.getJS(['route', 'github']);
-  var sourceHash = ss.getJS(['route', 'sourceHash']);
-  ss.setJS(['route', 'sourceHash']);
-  ss.setJS(['route', 'github']);
-
-  if(sourceHash) {
-    ss.GET('https://code-storage.solsort.com/' + sourceHash)
-      .then(o => {
-        ss.setJS('code', o);
-        localStorage.setItem('appeditContent', ss.getJS('code'));
-      }).catch(loadError);
-  } else if(repos) {
-    ss.GET(`https://api.github.com/repos/${repos}/contents/${repos.replace(/.*[/]/, '')}.js`)
-      .then(o => {
-        ss.setJS('code', atob(JSON.parse(o).content));
-        localStorage.setItem('appeditContent', ss.getJS('code'));
-      }).catch(loadError);
-  } else {
-    ss.setJS('code', localStorage.getItem('appeditContent'));
-  }
-}
-
-function loadError() {
-  console.log('here');
-  ss.setJS('code', 
-      '//\ # Load Error\n' +
-      '//\n// Could not load the file.\n\n' +
-      'var ss = require(\'solsort\');\n\n' +
-      'ss.html(() => [\'div\',\n' +
-        '  [\'h1\', \'Load Error\'],\n' +
-        '  \'Could not load the file.\'\n]);\n');
 }
 
 // ## About
+
+var aboutElem;
+da.ready(() => {
+  aboutElem = document.getElementById('about');
+  aboutElem.remove();
+});
 
 function about() {
   ss.bodyElem('appedit-main-app').appendChild(aboutElem);
 
   var example = type => (name => 
       ['a.example-link', 
-      { href: `https://appedit.solsort.com/?page=${type}&github=solsort/${name}` },
+      { href: `?page=${type}&github=solsort/${name}` },
       ['img', {src: `https://github.com/solsort/${name}/raw/master/icon.png`}]]);
 
   ss.renderJsonml(['div',
       ['h3', 'Demos / tutorials'],
-      ['div'].concat(['hello-world-appedit'].map(example('read'))),
+      ['div'].concat(['hello-world-appedit'].map(example('edit'))),
       ['h3', 'Function libraries'],
       ['div'].concat(['solsort', 'fri', 'direape', 'reun'].map(example('read'))),
       ['h3', 'Major Applications'],
@@ -288,7 +147,7 @@ function edit() {
   if(codemirror()) {
     codemirror().focus();
   } else {
-    ss.eval(createCodeMirror)
+    ss.eval(createCodeMirror);
   }
 }
 
@@ -484,6 +343,11 @@ function appProcess() {
 
 // ## Share
 //
+var shareElem;
+da.ready(() => {
+  shareElem = document.getElementById('share');
+  shareElem.remove();
+});
 function share() {
   ss.bodyElem('appedit-main-app').appendChild(shareElem);
   ss.ajax('https://code-storage.solsort.com/', {data: ss.getJS('code')})
@@ -537,6 +401,75 @@ ss.ready(() => {
           ['About', 'Read', 'Edit', 'App', 'Share'].map(link)),
         ss.bodyElem('topbar')));
 });
+
+// ## Initialisation
+//
+// ### Initialisation
+
+ss.setJS(['route', 'page'], 'about');
+
+ss.ready(() => {
+  loadSourceCode();
+
+  ss.setJS('settings', JSON.parse(localStorage.getItem('appeditSettings')));
+
+  ss.loadStyle('main-style',{
+    '#appedit-main-app': {
+      display: 'inline-block',
+      position: 'absolute',
+      top: 36, left: 0, right: 0, bottom: 0,
+      overflow: 'auto',
+    }
+  });
+
+  ss.bodyElem('loading').style.display = 'none';
+  da.ready(() => ss.rerun('route', main));
+
+});
+
+// ### Source code loading
+
+function loadSourceCode() {
+  var repos = ss.getJS(['route', 'github']);
+  var sourceHash = ss.getJS(['route', 'sourceHash']);
+  ss.setJS(['route', 'sourceHash']);
+  ss.setJS(['route', 'github']);
+
+  if(sourceHash) {
+    ss.GET('https://code-storage.solsort.com/' + sourceHash)
+      .then(o => {
+        ss.setJS('code', o);
+        localStorage.setItem('appeditContent', ss.getJS('code'));
+      }).catch(loadError);
+  } else if(repos) {
+    ss.GET(`https://api.github.com/repos/${repos}/contents/${repos.replace(/.*[/]/, '')}.js`)
+      .then(o => {
+        ss.setJS('code', atob(JSON.parse(o).content));
+        localStorage.setItem('appeditContent', ss.getJS('code'));
+      }).catch(loadError);
+  } else {
+    ss.setJS('code', localStorage.getItem('appeditContent'));
+    if(!ss.getJS('code')) {
+      ss.setJS('// Loading...');
+      ss.setJS(['route', 'github'], 'solsort/tutorial');
+      loadSourceCode();
+    }
+  }
+  if(!ss.getJS()) {
+    ss.setJS('');
+  }
+}
+
+function loadError() {
+  console.log('here');
+  ss.setJS('code', 
+      '//\ # Load Error\n' +
+      '//\n// Could not load the file.\n\n' +
+      'var ss = require(\'solsort\');\n\n' +
+      'ss.html(() => [\'div\',\n' +
+        '  [\'h1\', \'Load Error\'],\n' +
+        '  \'Could not load the file.\'\n]);\n');
+}
 
 // ## Non-code Roadmap.
 //
