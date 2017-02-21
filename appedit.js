@@ -85,7 +85,7 @@ function about() {
 
   ss.renderJsonml(['div',
       ['h3', 'Demos / tutorials'],
-      ['div'].concat(['hello-world-appedit'].map(example('edit'))),
+      ['div'].concat(['tutorial'].map(example('edit'))),
       ['h3', 'Function libraries'],
       ['div'].concat(['solsort', 'fri', 'direape', 'reun'].map(example('read'))),
       ['h3', 'Major Applications'],
