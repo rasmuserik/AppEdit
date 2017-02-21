@@ -17,7 +17,7 @@
 //
 // ## Dependencies:
 
-exports._meta = {
+exports.info = {
   title: 'AppEdit',
   version: '0.2.0',
   customIndexHtml: true
@@ -33,6 +33,7 @@ da.ready(() => da.runTests('appedit'));
 // TODO move to solsort
 
 // ### `loadCss(url)`
+
 ss.loadCss = (url) => {
   var id = url.toLowerCase().replace(/[^a-z0-9]/g,'');
   var elem;
@@ -104,106 +105,120 @@ ss.ready(() => {
   }
 });
 
-// ## Error
-
-function error(e) {
-  ss.bodyElem('main').innerHTML = `<h1 style=background:red>${e}</h1>`;
-}
-
-// ## Main styling
-ss.ready(() => ss.loadStyle('main-style',{
-  '#appedit-main-app': {
-    display: 'inline-block',
-    position: 'absolute',
-    top: 36, left: 0, right: 0, bottom: 0,
-    overflow: 'auto',
-  }
-}));
-// ## Routing
+// ## Routing / Main entry
 //
-ss.setJS(['route', 'page'], 'about');
-var about;
-var shareElem;
-ss.ready(() => ss.rerun('route', () => {
+var aboutElem, shareElem;
+//
+// ### Main
+
+function main() {
+  // TODO: ss.html should also accept non-fn
   // TODO: move all state into ss.set/get
   // TODO: ss.get/ss.set alias
   // TODO: ss.get('foo.bar');
   // TODO: ss.rerun does not fire when parent is changed...
-  if(!about) {
-    about = document.getElementById('about');
-    about.remove();
+
+  uiReset();
+
+  switch(ss.getJS(['route', 'page'])) {
+    case 'read':
+      read()
+      break;
+    case 'edit':
+      ss.eval(edit);
+      break;
+    case 'app':
+      app();
+      break;
+    case 'share':
+      share();
+      break;
+    default:
+      about();
   }
-  if(!shareElem) {
-    shareElem = document.getElementById('share');
-    shareElem.remove();
-  }
+}
+
+// ### Initialisation
+
+ss.setJS(['route', 'page'], 'about');
+
+ss.ready(() => {
+  loadSourceCode()
+
+  ss.setJS('settings', JSON.parse(localStorage.getItem('appeditSettings')));
+
+  ss.loadStyle('main-style',{
+    '#appedit-main-app': {
+      display: 'inline-block',
+      position: 'absolute',
+      top: 36, left: 0, right: 0, bottom: 0,
+      overflow: 'auto',
+    }
+  })
+
+  aboutElem = document.getElementById('about');
+  aboutElem.remove();
+
+  shareElem = document.getElementById('share');
+  shareElem.remove();
+
+  ss.bodyElem('loading').style.display = 'none';
+  ss.rerun('route', main);
+
+});
+
+// ### UI Reset
+
+function uiReset() {
+  ss.bodyElem('appedit-help').style.display = 'none';
   ss.bodyElem('codemirror-container').style.display = 'none';
   var mainElem = ss.bodyElem('appedit-main-app');
   mainElem.style.left = 0;
   mainElem.innerHTML = '';
-  ss.bodyElem('appedit-help').style.display = 
-    ss.getJS(['ui', 'show-help']) ? 'inline' : 'none';
 
-  switch(ss.getJS(['route', 'page'])) {
-    case 'read':
-      read().then(str => mainElem.innerHTML = str);
-      break;
-    case 'edit':
-      ss.bodyElem('codemirror-container').style.display = 'inline';
-      mainElem.style.left = '60%';
- //     read().then(str => mainElem.innerHTML = str);
-      mainElem.innerHTML = '<div id=solsort-ui></div>';
-      ss.nextTick(app);
-      Promise.resolve(ss.sleep(0))
-        .then(() => ss.eval(createEditor));
-      if(codemirror()) {
-        codemirror().focus();
-      }
-      break;
-    case 'app':
-      mainElem.innerHTML = '<div id=solsort-ui></div>';
-      ss.nextTick(app);
-      break;
-    case 'share':
-     mainElem.appendChild(shareElem);
-     share();
-     break;
-    default:
-     mainElem.appendChild(about);
-     aboutExamples();
-  }
-  ss.bodyElem('loading').style.display = 'none';
-}));
-
-// ## App
-
-var child;
-function appProcess() {
-  if(child) {
-    return child;
-  }
-  return Promise.resolve(ss.spawn())
-    .then(childPid => {
-      child = childPid;
-      ss.call(child, 'reun:eval', 'require("solsort")')
-          .then(() => ss.call(child, 'fri:subscribe', ss.pid, 'fri:set', ['ui', 'html']));
-    });
 }
 
-function app() {
-  ss.rerun('appedit:app', () => {
-    console.log('child', child);
-    var code = ss.getJS('code');
-    Promise.resolve(appProcess())
-      .then(() => ss.call(child, 'reun:eval', code))
-      .then(result => console.log('child-result:', result));
-  });
+// ### Source code loading
+
+function loadSourceCode() {
+  var repos = ss.getJS(['route', 'github']);
+  var sourceHash = ss.getJS(['route', 'sourceHash']);
+  ss.setJS(['route', 'sourceHash']);
+  ss.setJS(['route', 'github']);
+
+  if(sourceHash) {
+    ss.GET('https://code-storage.solsort.com/' + sourceHash)
+      .then(o => {
+        ss.setJS('code', o);
+        localStorage.setItem('appeditContent', ss.getJS('code'));
+      }).catch(loadError);
+  } else if(repos) {
+    ss.GET(`https://api.github.com/repos/${repos}/contents/${repos.replace(/.*[/]/, '')}.js`)
+      .then(o => {
+        ss.setJS('code', atob(JSON.parse(o).content));
+        localStorage.setItem('appeditContent', ss.getJS('code'));
+      }).catch(loadError);
+  } else {
+    ss.setJS('code', localStorage.getItem('appeditContent'));
+  }
 }
 
+function loadError() {
+  console.log('here');
+  ss.setJS('code', 
+      '//\ # Load Error\n' +
+      '//\n// Could not load the file.\n\n' +
+      'var ss = require(\'solsort\');\n\n' +
+      'ss.html(() => [\'div\',\n' +
+        '  [\'h1\', \'Load Error\'],\n' +
+        '  \'Could not load the file.\'\n]);\n');
+}
 
 // ## About
 
-function aboutExamples() {
+function about() {
+  ss.bodyElem('appedit-main-app').appendChild(aboutElem);
+
   var example = type => (name => 
       ['a.example-link', 
       { href: `https://appedit.solsort.com/?page=${type}&github=solsort/${name}` },
@@ -220,61 +235,14 @@ function aboutExamples() {
 
 }
 
-
-// ## Help + vim mode
-
-ss.ready(() => {
-  ss.bodyElem('appedit-help').onclick = () => {
-    ss.setJS(['ui', 'show-help'], false);
-    codemirror().focus();
-  };
-});
-
-// ## Vim mode
-
-if(ss.isBrowser()) {
-  ss.setJS('settings', JSON.parse(localStorage.getItem('appeditSettings')));
-}
-
-ss.ready(() => {
-  ss.bodyElem('appedit-vim-mode').onclick = (e) => {
-    ss.setJS(['settings', 'vim'],
-        !ss.getJS(['settings', 'vim']));
-    e.stopPropagation();
-    localStorage.setItem('appeditSettings', 
-        JSON.stringify(ss.getJS('settings')));
-    codemirror().focus();
-  };
-
-  ss.rerun('appedit:vim', () => {
-    var enabled = ss.getJS(['settings', 'vim']);
-    document.getElementById('appedit-vim-checkbox').checked = enabled;
-    if(codemirror()) {
-      codemirror().setOption('keyMap', enabled ? 'vim' : 'default');
-    }
-    document.getElementById('appedit-vim-help').style.display =
-      enabled ? 'inline' : 'none';
-
-  });
-});
-
-// ## Share
-//
-function share() {
-  ss.ajax('https://code-storage.solsort.com/', {data: ss.getJS('code')})
-    .then(id => {
-      ss.renderJsonml(['a', 
-          {href: `https://appedit.solsort.com/?page=read&sourceHash=${id}`},
-          id], document.getElementById('appedit-share-buttons'));
-    });
-}
 // ## Read
 //
 function read() {
   var code = ss.getJS('code') || '';
   return Promise.resolve(ss.eval((r, e, module) => 
         module.exports = markdown2html(js2markdown(code))))
-    .then(html => addToc(html));
+    .then(html => addToc(html))
+    .then(str => ss.bodyElem('appedit-main-app').innerHTML = str);
 }
 
 function js2markdown(src) {
@@ -302,93 +270,29 @@ function addToc(html) {
 
 
 
-// ## Navigation bar
+// ## Edit
 
-ss.ready(() => {
-  ss.loadStyle('nav-bar-css', {
-    '#topbar': {
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      zIndex: '100',
-      height: 36,
-      background: '#345',
-    },
-    '#topbar img': {
-      width: 36
-    },
-    '#topbar a': {
-      display: 'inline-block',
-      verticalAlign: 'top',
-      height: 20,
-      padding: '9px 10px 7px 10px',
-      color: '#fff',
-      textDecoration: 'none',
-      fontSize: 16,
-    },
-    '#topbar .selected': {
-      background: '#123',
-    }
-  });
+// ### edit
 
-  ss.handle('navigate', (_, page) => ss.setJS(['route', 'page'], page));
+function edit() {
 
-  var link = (name) => ['a', { href: '#',
-    onClick: 
-      ss.event('navigate', {preventDefault:true,data:name.toLowerCase()}),
-    class: name.toLowerCase() === ss.getJS(['route', 'page']) 
-           ? 'selected' : '',
-  }, name];
+  ss.bodyElem('appedit-main-app').style.left = '60%';
+  app();
 
-  ss.rerun('topbar', () =>
-      ss.renderJsonml(['nav', ['img', {src: 'icon.png'}]].concat(
-          ['About', 'Read', 'Edit', 'App', 'Share'].map(link)),
-        ss.bodyElem('topbar')));
-});
+  ss.bodyElem('codemirror-container').style.display = 'inline';
 
-// ## Load file from network
+  if(ss.getJS(['ui', 'show-help'])) {
+    ss.bodyElem('appedit-help').style.display = 'inline';
+  }
 
-ss.ready(() => {
-  var repos = ss.getJS(['route', 'github']);
-  var sourceHash = ss.getJS(['route', 'sourceHash']);
-  if(sourceHash) {
-    ss.GET('https://code-storage.solsort.com/' + sourceHash)
-      .then(o => {
-        ss.setJS('code', o);
-        localStorage.setItem('appeditContent', ss.getJS('code'));
-        ss.setJS(['route', 'sourceHash']);
-      }).catch(() => {
-        error('Error loading "' + repos + '" from GitHub');
-      });
-  } else if(repos) {
-    ss.GET(`https://api.github.com/repos/${repos}/contents/${repos.replace(/.*[/]/, '')}.js`)
-      .then(o => {
-        ss.setJS('code', atob(JSON.parse(o).content));
-        localStorage.setItem('appeditContent', ss.getJS('code'));
-        ss.setJS(['route', 'github']);
-      }).catch(() => {
-        error('Error loading "' + repos + '" from GitHub');
-      });
+  if(codemirror()) {
+    codemirror().focus();
   } else {
-    ss.setJS('code', localStorage.getItem('appeditContent'));
+    ss.eval(createCodeMirror)
   }
-});
+}
 
-// ## CodeMirror
-
-ss.ready(() => ss.loadStyle('codemirror',{
-  '#codemirror-container': {
-    marginTop: 0,
-    position: 'absolute',
-    display: 'inline-block',
-    top: 36, left: 0, right: '40%', bottom: 0,
-  },
-  '#codemirror': {
-    height: '100%'
-  }
-
-}));
+// ### createCodeMirror
 
 var _codemirror;
 
@@ -396,10 +300,7 @@ function codemirror() {
   return _codemirror;
 }
 
-function createEditor() {
-  if(codemirror()) {
-    return;
-  }
+function createCodeMirror() {
   var container = ss.bodyElem('codemirror-container');
   container.innerHTML = '<h1>Loading editor...</h1>';
 
@@ -447,14 +348,13 @@ function createEditor() {
           gutters: ['CodeMirror-lint-markers', 'CodeMirror-linenumbers',
           'CodeMirror-foldgutter'],
           lint: {esversion: 6},
-          value: localStorage.getItem('appeditContent')
+          value: ss.getJS('code')
         });
     codemirror().on('changes', function(o) {
       var content = o.getValue();
       ss.setJS('code', content);
     });
     codemirror().focus();
-
   });
 
   // ### Custom folding
@@ -489,6 +389,154 @@ function createEditor() {
   }
 }
 
+
+// ### Styling
+
+ss.ready(() => ss.loadStyle('codemirror',{
+  '#codemirror-container': {
+    marginTop: 0,
+    position: 'absolute',
+    display: 'inline-block',
+    top: 36, left: 0, right: '40%', bottom: 0,
+  },
+  '#codemirror': {
+    height: '100%'
+  }
+
+}));
+
+
+// ### Help popup / vim mode
+
+ss.ready(() => {
+
+  // Close help on click
+
+  ss.bodyElem('appedit-help').onclick = () => {
+    ss.setJS(['ui', 'show-help'], false);
+    codemirror().focus();
+  };
+
+  // Vim-mode button toggles state
+
+  ss.bodyElem('appedit-vim-mode').onclick = (e) => {
+    ss.setJS(['settings', 'vim'],
+        !ss.getJS(['settings', 'vim']));
+    e.stopPropagation();
+    localStorage.setItem('appeditSettings', 
+        JSON.stringify(ss.getJS('settings')));
+    codemirror().focus();
+  };
+
+  // Change of `'settings.vim'` enables vim-mode
+
+  ss.rerun('appedit:vim', () => {
+    var enabled = ss.getJS(['settings', 'vim']);
+    document.getElementById('appedit-vim-checkbox').checked = enabled;
+    if(codemirror()) {
+      codemirror().setOption('keyMap', enabled ? 'vim' : 'default');
+    }
+    document.getElementById('appedit-vim-help').style.display =
+      enabled ? 'inline' : 'none';
+
+  });
+});
+
+// ## App
+
+var child, runningApp, rerunApp;
+
+function app() {
+  ss.bodyElem('appedit-main-app').innerHTML = '<div id=solsort-ui></div>';
+  ss.nextTick(() => ss.rerun('appedit:app', appProcess));
+}
+
+function appProcess() {
+  var code = ss.getJS('code');
+
+  if(runningApp) {
+    rerunApp = true;
+    return;
+  }
+  runningApp = true;
+  rerunApp = false;
+
+  if(!child) {
+    Promise.resolve(ss.spawn())
+      .then(childPid => {
+        child = childPid;
+        ss.call(child, 'reun:eval', 'require("solsort")')
+          .then(() => ss.call(child, 'fri:subscribe', ss.pid, 'fri:set', ['ui', 'html']))
+          .then(() => runningApp = false)
+          .then(() => appProcess());
+      });
+    return;
+  }
+
+  Promise.resolve(ss.call(child, 'reun:eval', code))
+    .then(result => console.log('child-result:', result))
+    .then(() => runningApp = false)
+    .then(() => rerunApp && appProcess());
+
+}
+
+
+
+// ## Share
+//
+function share() {
+  ss.bodyElem('appedit-main-app').appendChild(shareElem);
+  ss.ajax('https://code-storage.solsort.com/', {data: ss.getJS('code')})
+    .then(id => {
+      ss.renderJsonml(['a', 
+          {href: `https://appedit.solsort.com/?page=read&sourceHash=${id}`},
+          id], document.getElementById('appedit-share-buttons'));
+    });
+}
+// ## Navigation bar
+
+ss.ready(() => {
+  ss.loadStyle('nav-bar-css', {
+    '#topbar': {
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      zIndex: '100',
+      height: 36,
+      background: '#345',
+    },
+    '#topbar img': {
+      width: 36
+    },
+    '#topbar a': {
+      display: 'inline-block',
+      verticalAlign: 'top',
+      height: 20,
+      padding: '9px 10px 7px 10px',
+      color: '#fff',
+      textDecoration: 'none',
+      fontSize: 16,
+    },
+    '#topbar .selected': {
+      background: '#123',
+    }
+  });
+
+  ss.handle('navigate', (_, page) => ss.setJS(['route', 'page'], page));
+
+  var link = (name) => ['a', { href: '#',
+    onClick: 
+      ss.event('navigate', {preventDefault:true,data:name.toLowerCase()}),
+    class: name.toLowerCase() === ss.getJS(['route', 'page']) 
+           ? 'selected' : '',
+  }, name];
+
+  ss.rerun('topbar', () =>
+      ss.renderJsonml(['nav', ['img', {src: 'icon.png'}]].concat(
+          ['About', 'Read', 'Edit', 'App', 'Share'].map(link)),
+        ss.bodyElem('topbar')));
+});
 
 // ## Non-code Roadmap.
 //
