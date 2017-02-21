@@ -31,11 +31,7 @@ You can try it live at https://appedit.solsort.com/.
 ## Main
     
     function main() {
-TODO: ss.html should also accept non-fn
 TODO: move all state into ss.set/get
-TODO: ss.get/ss.set alias
-TODO: ss.get('foo.bar');
-TODO: ss.rerun does not fire when parent is changed...
     
       uiReset();
     
