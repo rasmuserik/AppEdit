@@ -301,9 +301,12 @@ Change of `'settings.vim'` enables vim-mode
     var child, runningApp, rerunApp;
     
     function app() {
-      ss.bodyElem('appedit-main-app').innerHTML = '<div id=solsort-ui></div>';
+      ss.bodyElem('appedit-main-app').innerHTML = 
+        '<div id=solsort-ui></div>';
       ss.nextTick(() => ss.rerun('appedit:app', appProcess));
     }
+    
+### appProcess
     
     function appProcess() {
       var code = ss.getJS('code');
@@ -319,7 +322,13 @@ Change of `'settings.vim'` enables vim-mode
         Promise.resolve(ss.spawn())
           .then(childPid => {
             child = childPid;
-            ss.call(child, 'reun:eval', 'require("solsort")')
+            ss.call(child, 'reun:eval', `
+                var ss = require("solsort");
+                self.onerror = function(msg, src, line, col, err) {
+                  /*console.log.apply(console, ss.slice(arguments));*/
+                  ss.emit(ss.nid, 'log:error', ss.jsonify(err) || msg);
+                }
+                `)
               .then(() => ss.call(child, 'fri:subscribe', ss.pid, 'fri:set', ['ui', 'html']))
               .then(() => runningApp = false)
               .then(() => appProcess());
@@ -327,22 +336,127 @@ Change of `'settings.vim'` enables vim-mode
         return;
       }
     
+      log('App started');
       Promise.resolve(ss.call(child, 'reun:eval', code))
-        .then(result => console.log('child-result:', result))
+        .catch(e => error('error', e))
         .then(() => runningApp = false)
         .then(() => rerunApp && appProcess());
-    
     }
     
+## Message overlay
+
+### `log` / `warn` / `error`
     
+    function log() {
+      printLog(arguments, 'message');
+    }
+    
+    function warn() {
+      printLog(arguments, 'warning');
+    }
+    
+    function error(err, a, b, c, d) {
+      /*console.log(err, a, b, c, d);*/
+      if(err !== null &&
+          typeof err === 'object' && err.$_class || err instanceof Error) {
+        printLog([err.message, /*'\n' + err.stack*/], 'error');
+      } else {
+        printLog(arguments, 'error');
+      }
+    }
+    
+### Handlers
+    
+    ss.handle('log:log', log);
+    ss.handle('log:warning', warn);
+    ss.handle('log:error', error);
+    
+### `printLog(args, type)`
+    
+    function printLog(args, type) {
+      console.log.apply(console, [type].concat(args));
+      appLogJsonml(['div', 
+          {onClick: () => fadeout(ss.bodyElem('applog'))},
+          ['div', { style: { textAlign: 'right', fontWeight: 'bold' } }, 
+          new Date().toISOString().slice(0,19).replace('T', ' ')],
+          ss.slice(args).map(o => String(o)).join(' ')], 
+          'applog-' + type);
+    }
+    
+### `appLogJsonml(json-html, className)`
+    
+    function appLogJsonml(msg, className) {
+      ss.bodyElem('applog').remove();
+    
+      var elem = document.createElement('div');
+      elem.id = 'applog';
+      elem.className = className;
+      ss.renderJsonml(msg, elem);
+    
+      document.body.appendChild(elem);
+    
+      setTimeout(() => fadeout(elem), 5000);
+    }
+    
+### `fadeout(elem)`
+    
+    function fadeout(elem) {
+      elem.style.opacity = 0;
+      setTimeout(() => elem.remove(), 1000);
+    }
+    
+### Styling
+    
+    ss.ready(() => {
+      var applogBase = {
+        transition: 'opacity 0.5s',
+        whiteSpace: 'pre-wrap',
+        margin: 0,
+        maxWidth: '45%',
+        maxHeight: '90%',
+        boxSizing: 'border-box',
+        display: 'inline-block',
+        padding: '6px 12px 12px 6px',
+        overflow: 'hidden',
+        borderRadius: 6,
+        zIndex: '1000',
+        position: 'fixed',
+        bottom: -6,
+        right: -6, 
+      };
+      ss.loadStyle('app-log', {
+        '.applog-close': {
+          display: 'inline-block',
+          borderRadius: 6,
+          padding: '3px 6px 3px 6px',
+          margin: '-3px -6px 0px 6px',
+          background: 'black',
+          color: 'white',
+          opacity: '0.7',
+        },
+        '.applog-message': Object.assign({}, applogBase, {
+          background: 'rgba(230,255,230,0.8)',
+          border: '1px solid #080',
+        }),
+        '.applog-error': Object.assign({}, applogBase, {
+          background: 'rgba(255,230,230,0.8)',
+          border: '1px solid #c00',
+        }),
+        '.applog-warn': Object.assign({}, applogBase, {
+          background: 'rgba(255,255,230,0.8)',
+          border: '1px solid #aa0',
+        }),
+      });
+    });
     
 ## Share
-
+    
     var shareElem;
     da.ready(() => {
       shareElem = document.getElementById('share');
       shareElem.remove();
     });
+    
     function share() {
       ss.bodyElem('appedit-main-app').appendChild(shareElem);
       ss.ajax('https://code-storage.solsort.com/hash', {data: ss.get('code')})
