@@ -345,7 +345,7 @@ Change of `'settings.vim'` enables vim-mode
     });
     function share() {
       ss.bodyElem('appedit-main-app').appendChild(shareElem);
-      ss.ajax('https://code-storage.solsort.com/', {data: ss.getJS('code')})
+      ss.ajax('https://code-storage.solsort.com/hash', {data: ss.get('code')})
         .then(id => {
           ss.renderJsonml(['a', 
               {href: `https://appedit.solsort.com/?page=read&sourceHash=${id}`},
@@ -427,13 +427,13 @@ Change of `'settings.vim'` enables vim-mode
     function loadSourceCode() {
       var repos = ss.getJS(['route', 'github']);
       var sourceHash = ss.getJS(['route', 'sourceHash']);
-      ss.setJS(['route', 'sourceHash']);
-      ss.setJS(['route', 'github']);
+      ss.set('route.sourceHash');
+      ss.set('route.github');
     
       if(sourceHash) {
-        ss.GET('https://code-storage.solsort.com/' + sourceHash)
+        ss.GET('https://code-storage.solsort.com/hash/' + sourceHash)
           .then(o => {
-            ss.setJS('code', o);
+            ss.set('code', o);
             localStorage.setItem('appeditContent', ss.getJS('code'));
           }).catch(loadError);
       } else if(repos) {
