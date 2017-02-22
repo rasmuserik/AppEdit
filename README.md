@@ -40,7 +40,7 @@ TODO: move all state into ss.set/get
           read();
           break;
         case 'edit':
-          ss.eval(edit);
+          edit();
           break;
         case 'app':
           app();
@@ -130,13 +130,12 @@ TODO: move all state into ss.set/get
 ### edit
     
     function edit() {
-    
       ss.bodyElem('appedit-main-app').style.left = '60%';
       app();
     
       ss.bodyElem('codemirror-container').style.display = 'inline';
     
-      if(ss.getJS(['ui', 'show-help'])) {
+      if(ss.get('ui.show-help')) {
         ss.bodyElem('appedit-help').style.display = 'inline';
       }
     
