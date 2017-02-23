@@ -571,6 +571,7 @@ function sharePage(page, sourceHash) {
 function share() {
   ss.loadCss('//unpkg.com/font-awesome@4.7.0/css/font-awesome.css');
   ss.bodyElem('appedit-main-app').appendChild(shareElem);
+  document.getElementById('appedit-share-buttons').innerHTML = 'Saving on server...';
   ss.ajax('https://code-storage.solsort.com/hash', {data: ss.get('code')})
     .then(id => {
       var url = 'https://appedit.solsort.com/?page=read&sourceHash=' + id;
