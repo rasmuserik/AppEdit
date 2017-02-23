@@ -451,19 +451,134 @@ ss.ready(() => {
 
 // ## Share
 
+// ### `shareElem`
+
 var shareElem;
 da.ready(() => {
   shareElem = document.getElementById('share');
   shareElem.remove();
 });
 
+// ### Styling
+
+ss.ready(() => ss.loadStyle('share-links',{
+  '.share-links': {
+
+  },
+  '.share-links > a': {
+    display: 'inline-block',
+    width: 36,
+    height: 36,
+    textAlign: 'center',
+    textDecoration: 'none',
+    verticalAlign: 'middle',
+    border: '2px solid #345',
+    background: 'white',
+    borderRadius: 8,
+    margin: 4,
+    color: '#345',
+    boxShadow: '1px 1px 3px rgba(0,0,0,0.5)',
+  },
+  '.share-links > a > i': {
+    fontSize: 22,
+    lineHeight: 36,
+  },
+  '.share-links > a > span': {
+    fontSize: 16,
+    fontWeight: 'bold',
+    lineHeight: 36,
+  },
+}));
+
+
+
+// ### `shareUrl`
+
+function shareUrl(name, url, title) {
+  url = encodeURIComponent(url);
+  title = encodeURIComponent(title);
+  return {
+    twitter: `http://twitter.com/home?status=${title}+${url}`,
+    digg: `http://www.digg.com/submit?phase=2&url=${url}&title=${title}`,
+    facebook: `http://www.facebook.com/share.php?u=${url}&title=${title}`,
+    stumbleupon: `http://www.stumbleupon.com/submit?url=${url}&title=${title}`,
+    delicious: `http://del.icio.us/post?url=${url}&title=${title}]&notes=`,
+    linkedin: `http://www.linkedin.com/shareArticle?mini=true&url=${url}&title=${title}&source=solsort.com`,
+    slashdot: `http://slashdot.org/bookmark.pl?url=${url}&title=${title}`,
+    technorati: `http://technorati.com/faves?add=${url}&title=${title}`,
+    tumblr: `http://www.tumblr.com/share?v=3&u=${url}&t=${title}`,
+    reddit: `http://www.reddit.com/submit?url=${url}&title=${title}`,
+    newsvine: `http://www.newsvine.com/_tools/seed&save?u=${url}&h=${title}`,
+    evernote: `http://www.evernote.com/clip.action?url=${url}&title=${title}`,
+    'google-plus': `https://plus.google.com/share?url=${url}`,
+    email: `mailto:?subject=${title}&body=${url}`,
+    sms: `sms:?subject=${title}&body=${url}`,
+    xing: `https://www.xing.com/app/user?op=share;url=${url};title=${title}`,
+
+    whatsapp: `whatsapp://send?text=${url}`,
+    'y-combinator': `https://news.ycombinator.com/submitlink?u=${url}&t=${title}`,
+    vk: `http://vk.com/share.php?title=${title}&url=${url}`,
+    telegram: `https://telegram.me/share/url?text=${title}&url=${url}`,
+    slack: 'TODO',
+    'vector-im': 'TODO',
+    'www': url,
+  }[name];
+}
+
+// ### `shareIcon`
+
+function shareIcon(name) {
+  var text = {
+    www: ['span', 'www'],
+    email: ['span', {style: {fontSize: '130%'}}, '@'],
+    slashdot: ['span', '/.'],
+    technorati: 'TODO',
+    newsvine: 'TODO',
+    evernote: 'TODO',
+    sms: ['span', 'sms'],
+    'vector-im': 'TODO',
+  };
+  return text[name] || [`i.fa.fa-${name}`];
+}
+
+// ### `shareLinks`
+
+function shareLinks(url, linkDesc) {
+  var medias = ['email', 'sms',
+  'twitter', 'facebook', 'google-plus', 'linkedin', 'tumblr',
+  'delicious', 'digg', 'reddit', 'slashdot', 'y-combinator'];
+  return ['p',
+  ['span.topbar-item', {style: {fontSize: 16}}, linkDesc], ' \xa0 ', ['a', {href: url}, url],
+    ['div.share-links'].concat(
+      medias.map(m => ['a', {href: shareUrl(m, url, '')}, shareIcon(m)]))
+      ]
+      ;
+}
+
+// ### `sharePage`
+//
+function sharePage(page, sourceHash) {
+  var url = 'https://appedit.solsort.com/'+
+    '?page=' + page.toLowerCase() +
+    '&sourceHash=' + sourceHash;
+  var shareUrl = 'http://share.solsort.com/' + page[0] + sourceHash.slice(0, 12);
+  ss.GET(shareUrl + '/' + encodeURIComponent(url));
+
+  return shareLinks(shareUrl, page);
+}
+// ### `share`
+//
 function share() {
+  ss.loadCss('//unpkg.com/font-awesome@4.7.0/css/font-awesome.css');
   ss.bodyElem('appedit-main-app').appendChild(shareElem);
   ss.ajax('https://code-storage.solsort.com/hash', {data: ss.get('code')})
     .then(id => {
-      ss.renderJsonml(['a', 
-          {href: `https://appedit.solsort.com/?page=read&sourceHash=${id}`},
-          id], document.getElementById('appedit-share-buttons'));
+      var url = 'https://appedit.solsort.com/?page=read&sourceHash=' + id;
+      ss.renderJsonml(['div',
+          sharePage('App', id),
+          sharePage('Read', id),
+          sharePage('Edit', id),
+      ], document.getElementById('appedit-share-buttons'));
     });
 }
 // ## Navigation bar
@@ -478,6 +593,7 @@ ss.ready(() => {
       zIndex: '100',
       height: 36,
       background: '#345',
+    boxShadow: '1px 1px 3px rgba(0,0,0,0.5)',
     },
     '#topbar img': {
       width: 36
