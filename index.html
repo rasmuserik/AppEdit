@@ -255,7 +255,6 @@ body {
         &#10006;
       </span>
       <h1 style=clear:none;margin-top:10px>Help/Settings</h1>
-
       <div>
         <div class=shortcut><i><b>Ctrl</b> + <b>S</b></i> Share / Save</div>
         <div class=shortcut><i><b>Ctrl</b> + <b>E</b></i> Export to GitHub</div>
@@ -321,6 +320,22 @@ body {
         <h2>Chrome app</h2>
         TODO: guide chrome app
       -->
+
+      <div>
+        <p>
+        <button id=capture-thumbnail>Capture icon</button> (firefox only).</p>
+        <div id=thumbnail-svg style="display:inline-block;width:256px;height:256px;border:2px solid black;border-radius:16px">
+          <svg  xmlns="http://www.w3.org/2000/svg" width=256 height=256>
+            <foreignObject width=256 height=256>
+            <div id=thumbnail-html xmlns="http://www.w3.org/1999/xhtml">
+            </div>
+            </foreignObject>
+          </svg>
+        </div>
+        <canvas width=256 height=256 style="outline:1px solid black;width:128px;height:128px" id=thumbCanvas>
+        </canvas>
+      </div>
+
     </div>
 
     <footer id=loading>Loading, may take a while..</footer>

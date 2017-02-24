@@ -338,7 +338,12 @@ Change of `'settings.vim'` enables vim-mode
     
       log('App started');
       Promise.resolve(ss.call(child, 'reun:eval', code))
-        .catch(e => error('error', e))
+        .then(result => {
+          if(result && typeof result === 'object') {
+            ss.set('app.info', result.info);
+          }
+        })
+      .catch(e => error('error', e))
         .then(() => runningApp = false)
         .then(() => rerunApp && appProcess());
     }
@@ -549,10 +554,10 @@ Change of `'settings.vim'` enables vim-mode
       'delicious', 'digg', 'reddit', 'slashdot', 'y-combinator'];
       return ['p',
       ['span.topbar-item', {style: {fontSize: 16}}, linkDesc], ' \xa0 ', ['a', {href: url}, url],
-        ['div.share-links'].concat(
+      ['div.share-links'].concat(
           medias.map(m => ['a', {href: shareUrl(m, url, '')}, shareIcon(m)]))
-          ]
-          ;
+      ]
+      ;
     }
     
 ### `sharePage`
@@ -567,8 +572,55 @@ Change of `'settings.vim'` enables vim-mode
       return shareLinks(shareUrl, page);
     }
 ### `share`
-
-    function share() {
+    
+    function share() { 
+      shareButtons();
+      generateThumbnail();
+    }
+    
+### generateThumbnail
+    
+    function generateThumbnail() {
+      document.getElementById('thumbnail-html').innerHTML = '<div id=solsort-ui></div>';
+      ss.nextTick(() => ss.rerun('appedit:app', appProcess));
+      document.getElementById('capture-thumbnail').onclick = renderThumbnailToCanvas;
+    }
+    
+    function renderThumbnailToCanvas() {
+      var canvas = document.getElementById('thumbCanvas');
+      var ctx = canvas.getContext('2d');
+    
+      var URL = window.URL || window.webkitURL || window;
+    
+      var data = document.getElementById('thumbnail-svg').innerHTML;
+      var img = new Image();
+      var svg = new Blob([data], {type: 'image/svg+xml'});
+      var url = URL.createObjectURL(svg);
+    
+      img.onload = function() {
+        ctx.clearRect(0,0,256,256);
+        ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(url);
+        try {
+          console.log(canvas.toDataURL());
+          log('Generated thumbnail');
+        } catch(e) {
+          error('Could not convert thumbnail to PNG. Thumbnail generation probably only works in Firefox. Chrome sees the canvas as tainted... :(');
+          throw e;
+        }
+      };
+      img.onerror = function() {
+        error('Error rendering thumbnail');
+        URL.revokeObjectURL(url);
+      };
+    
+      img.src = url;
+      ctx.fillRect(0,0,10,10);
+    }
+    
+### shareButtons
+    
+    function shareButtons() {
       ss.loadCss('//unpkg.com/font-awesome@4.7.0/css/font-awesome.css');
       ss.bodyElem('appedit-main-app').appendChild(shareElem);
       document.getElementById('appedit-share-buttons').innerHTML = 'Saving on server...';
@@ -594,7 +646,7 @@ Change of `'settings.vim'` enables vim-mode
           zIndex: '100',
           height: 36,
           background: '#345',
-        boxShadow: '1px 1px 3px rgba(0,0,0,0.5)',
+          boxShadow: '1px 1px 3px rgba(0,0,0,0.5)',
         },
         '#topbar img': {
           width: 36
