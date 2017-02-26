@@ -574,7 +574,13 @@ Change of `'settings.vim'` enables vim-mode
         '?page=' + page.toLowerCase() +
         '&sourceHash=' + sourceHash;
       var shareUrl = 'http://share.solsort.com/' + page[0] + sourceHash.slice(0, 12);
-      ss.GET(shareUrl + '/' + encodeURIComponent(url));
+    
+Workaround cors-https-restriction: share.solsort.com is http-only,
+so this is a simple hack of how to make a get request to that url.
+    
+      var loadElem = ss.bodyElem('share-' + page, 'img');
+      loadElem.src = shareUrl + '/' + encodeURIComponent(url);
+      loadElem.width = loadElem.height = '0';
     
       return shareLinks(shareUrl, page);
     }
