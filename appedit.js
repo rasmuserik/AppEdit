@@ -466,35 +466,42 @@ da.ready(() => {
 
 // ### Styling
 
-ss.ready(() => ss.loadStyle('share-links',{
-  '.share-links': {
 
-  },
-  '.share-links > a': {
-    display: 'inline-block',
-    width: 36,
-    height: 36,
-    textAlign: 'center',
-    textDecoration: 'none',
-    verticalAlign: 'middle',
-    border: '2px solid #345',
-    background: 'white',
-    borderRadius: 8,
-    margin: 4,
-    color: '#345',
-    boxShadow: '1px 1px 3px rgba(0,0,0,0.5)',
-  },
-  '.share-links > a > i': {
-    fontSize: 22,
-    lineHeight: 36,
-  },
-  '.share-links > a > span': {
-    fontSize: 16,
-    fontWeight: 'bold',
-    lineHeight: 36,
-  },
-}));
-
+ss.ready(() => {
+  var buttonStyle = {
+      display: 'inline-block',
+      height: 36,
+      textAlign: 'center',
+      textDecoration: 'none',
+      verticalAlign: 'middle',
+      border: '2px solid #345',
+      background: 'white',
+      borderRadius: 8,
+      margin: 4,
+      color: '#345',
+      boxShadow: '1px 1px 3px rgba(0,0,0,0.5)',
+      lineHeight: 36,
+  };
+  ss.loadStyle('share-links',{
+    '.share-links': {
+    },
+    '.appedit-button': Object.assign({}, buttonStyle, {
+      padding: '0 8px 0 8px',
+      fontSize: 16,
+      fontWeight: 'bold',
+    }),
+    '.share-links > a': Object.assign({}, buttonStyle, {
+      width: 36,
+    }),
+    '.share-links > a > i': {
+      fontSize: 22,
+    },
+    '.share-links > a > span': {
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
+  });
+});
 
 
 // ### `shareUrl`
@@ -574,8 +581,27 @@ function sharePage(page, sourceHash) {
 // ### `share`
 
 function share() { 
+  ss.bodyElem('appedit-main-app').appendChild(shareElem);
   shareButtons();
   generateThumbnail();
+}
+
+// ### githubExport() 
+
+function githubExport(sourceHash) {
+  var elem = ss.bodyElem('appedit-github-export');
+  var appInfo = ss.get('app.info', {});
+  if(!appInfo.github) {
+    ss.renderJsonml(['div', 'You need to set ', 
+        ['code', 'exports.info.github'],
+        ' in order to export to github. Example:',
+        ['pre', 'exports.info = {\n  github: \'username/repository\'\n};']
+    ], elem);
+  } else {
+    ss.renderJsonml(['div',
+        ['span.appedit-button', 'Export to GitHub'],
+        ['pre', JSON.stringify(appInfo, null, 4)]], elem);
+  }
 }
 
 // ### generateThumbnail
@@ -606,34 +632,37 @@ function renderThumbnailToCanvas() {
       log('Generated thumbnail');
     } catch(e) {
       error('Could not convert thumbnail to PNG. Thumbnail generation probably only works in Firefox. Chrome sees the canvas as tainted... :(');
-      throw e;
-    }
-  };
-  img.onerror = function() {
-    error('Error rendering thumbnail');
-    URL.revokeObjectURL(url);
-  };
+          throw e;
+          }
+          };
+          img.onerror = function() {
+            error('Error rendering thumbnail');
+            URL.revokeObjectURL(url);
+          };
 
-  img.src = url;
-  ctx.fillRect(0,0,10,10);
-}
+          img.src = url;
+          ctx.fillRect(0,0,10,10);
+          }
 
-// ### shareButtons
+          // ### shareButtons
 
-function shareButtons() {
-  ss.loadCss('//unpkg.com/font-awesome@4.7.0/css/font-awesome.css');
-  ss.bodyElem('appedit-main-app').appendChild(shareElem);
-  document.getElementById('appedit-share-buttons').innerHTML = 'Saving on server...';
-  ss.ajax('https://code-storage.solsort.com/hash', {data: ss.get('code')})
-    .then(id => {
-      var url = 'https://appedit.solsort.com/?page=read&sourceHash=' + id;
-      ss.renderJsonml(['div',
-          sharePage('App', id),
-          sharePage('Read', id),
-          sharePage('Edit', id),
-      ], document.getElementById('appedit-share-buttons'));
-    });
-}
+          function shareButtons() {
+            ss.loadCss('//unpkg.com/font-awesome@4.7.0/css/font-awesome.css');
+            document.getElementById('appedit-share-buttons').innerHTML = 'Saving on server...';
+            ss.ajax('https://code-storage.solsort.com/hash', {data: ss.get('code')})
+              .then(id => {
+
+                var url = 'https://appedit.solsort.com/?page=read&sourceHash=' + id;
+                ss.renderJsonml(['div',
+                    sharePage('App', id),
+                    sharePage('Read', id),
+                    sharePage('Edit', id),
+                ], document.getElementById('appedit-share-buttons'));
+
+                /* TODO: would be more elegant to wait for app to initialise */
+                setTimeout(() => githubExport(id), 500); 
+              });
+          }
 // ## Navigation bar
 
 ss.ready(() => {
