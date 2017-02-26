@@ -598,8 +598,14 @@ Change of `'settings.vim'` enables vim-mode
             ['pre', 'exports.info = {\n  github: \'username/repository\'\n};']
         ], elem);
       } else {
+        var exportUrl = 
+          'https://export-to-github.solsort.com/' +
+          '?sourceHash=' + sourceHash +
+          '&repos=' + appInfo.github;
+    
         ss.renderJsonml(['div',
-            ['span.appedit-button', 'Export to GitHub'],
+            ['a.appedit-button', { href: exportUrl, },
+            'Export to GitHub'],
             ['pre', JSON.stringify(appInfo, null, 4)]], elem);
       }
     }
