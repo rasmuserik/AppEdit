@@ -469,18 +469,18 @@ Change of `'settings.vim'` enables vim-mode
     
     ss.ready(() => {
       var buttonStyle = {
-          display: 'inline-block',
-          height: 36,
-          textAlign: 'center',
-          textDecoration: 'none',
-          verticalAlign: 'middle',
-          border: '2px solid #345',
-          background: 'white',
-          borderRadius: 8,
-          margin: 4,
-          color: '#345',
-          boxShadow: '1px 1px 3px rgba(0,0,0,0.5)',
-          lineHeight: 36,
+        display: 'inline-block',
+        height: 36,
+        textAlign: 'center',
+        textDecoration: 'none',
+        verticalAlign: 'middle',
+        border: '2px solid #345',
+        background: 'white',
+        borderRadius: 8,
+        margin: 4,
+        color: '#345',
+        boxShadow: '1px 1px 3px rgba(0,0,0,0.5)',
+        lineHeight: 36,
       };
       ss.loadStyle('share-links',{
         '.share-links': {
@@ -643,38 +643,38 @@ so this is a simple hack of how to make a get request to that url.
           console.log(canvas.toDataURL());
           log('Generated thumbnail');
         } catch(e) {
-          error('Could not convert thumbnail to PNG. Thumbnail generation probably only works in Firefox. Chrome sees the canvas as tainted... :(');
-              throw e;
-              }
-              };
-              img.onerror = function() {
-                error('Error rendering thumbnail');
-                URL.revokeObjectURL(url);
-              };
+          error('Could not convert thumbnail to PNG. Thumbnail generation probably only works in Firefox. Chrome sees the canvas as tainted... ');
+          throw e;
+        }
+      };
+      img.onerror = function() {
+        error('Error rendering thumbnail');
+        URL.revokeObjectURL(url);
+      };
     
-              img.src = url;
-              ctx.fillRect(0,0,10,10);
-              }
+      img.src = url;
+      ctx.fillRect(0,0,10,10);
+    }
     
 ### shareButtons
     
-              function shareButtons() {
-                ss.loadCss('//unpkg.com/font-awesome@4.7.0/css/font-awesome.css');
-                document.getElementById('appedit-share-buttons').innerHTML = 'Saving on server...';
-                ss.ajax('https://code-storage.solsort.com/hash', {data: ss.get('code')})
-                  .then(id => {
+    function shareButtons() {
+      ss.loadCss('//unpkg.com/font-awesome@4.7.0/css/font-awesome.css');
+      document.getElementById('appedit-share-buttons').innerHTML = 'Saving on server...';
+      ss.ajax('https://code-storage.solsort.com/hash', {data: ss.get('code')})
+        .then(id => {
     
-                    var url = 'https://appedit.solsort.com/?page=read&sourceHash=' + id;
-                    ss.renderJsonml(['div',
-                        sharePage('App', id),
-                        sharePage('Read', id),
-                        sharePage('Edit', id),
-                    ], document.getElementById('appedit-share-buttons'));
+          var url = 'https://appedit.solsort.com/?page=read&sourceHash=' + id;
+          ss.renderJsonml(['div',
+              sharePage('App', id),
+              sharePage('Read', id),
+              sharePage('Edit', id),
+          ], document.getElementById('appedit-share-buttons'));
     
-                    /* TODO: would be more elegant to wait for app to initialise */
-                    setTimeout(() => githubExport(id), 500); 
-                  });
-              }
+          /* TODO: would be more elegant to wait for app to initialise */
+          setTimeout(() => githubExport(id), 500); 
+        });
+    }
 ## Navigation bar
     
     ss.ready(() => {
