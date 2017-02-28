@@ -592,6 +592,28 @@ function share() {
   generateThumbnail();
 }
 
+// ### doGithubExport() 
+
+function doGithubExport() {
+  ss.ajax('https://code-storage.solsort.com/hash', {data: ss.get('code')})
+    .then(sourceHash => {
+      /* TODO: would be more elegant to wait for app to initialise 
+       * TODO: refactor*/
+      setTimeout(() => {
+
+        var appInfo = ss.get('app.info', {});
+        if(!appInfo.github) {
+          alert('You need to set exports.info.github in order to export to github.\n' +
+              'Example: \nexports.info = {\n  github: \'username/repository\'\n};');
+        } else {
+          var exportUrl = 
+            'https://export-to-github.solsort.com/' +
+            '?sourceHash=' + sourceHash +
+            '&repos=' + appInfo.github;
+        }
+      }, 500); 
+    });
+}
 // ### githubExport() 
 
 function githubExport(sourceHash) {
