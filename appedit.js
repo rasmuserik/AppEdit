@@ -475,7 +475,7 @@ typeof document !== 'undefined' && ss.ready(() => {
 // ### `shareElem`
 
 var shareElem;
-da.ready(() => {
+typeof document !== 'undefined' && ss.ready(() => {
   shareElem = document.getElementById('share');
   shareElem.remove();
 });

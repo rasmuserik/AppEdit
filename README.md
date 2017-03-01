@@ -475,7 +475,7 @@ Change of `'settings.vim'` enables vim-mode
 ### `shareElem`
     
     var shareElem;
-    da.ready(() => {
+    typeof document !== 'undefined' && ss.ready(() => {
       shareElem = document.getElementById('share');
       shareElem.remove();
     });
@@ -617,8 +617,7 @@ so this is a simple hack of how to make a get request to that url.
           /* TODO: would be more elegant to wait for app to initialise 
            * TODO: refactor*/
           setTimeout(() => {
-    
-            var appInfo = ss.get('app.info', {});
+            var appInfo = ss.get('app.info');
             if(!appInfo || !appInfo.github) {
               alert('You need to set exports.info.github in order to export to github.\n' +
                   'Example: \nexports.info = {\n  github: \'username/repository\'\n};');
@@ -636,8 +635,8 @@ so this is a simple hack of how to make a get request to that url.
     
     function githubExport(sourceHash) {
       var elem = ss.bodyElem('appedit-github-export');
-      var appInfo = ss.get('app.info', {});
-      if(!appInfo.github) {
+      var appInfo = ss.get('app.info');
+      if(!appInfo || !appInfo.github) {
         ss.renderJsonml(['div', 'You need to set ', 
             ['code', 'exports.info.github'],
             ' in order to export to github. Example:',
