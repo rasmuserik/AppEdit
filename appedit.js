@@ -619,7 +619,7 @@ function doGithubExport() {
       setTimeout(() => {
 
         var appInfo = ss.get('app.info', {});
-        if(!appInfo.github) {
+        if(!appInfo || !appInfo.github) {
           alert('You need to set exports.info.github in order to export to github.\n' +
               'Example: \nexports.info = {\n  github: \'username/repository\'\n};');
         } else {
