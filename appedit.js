@@ -609,6 +609,7 @@ function doGithubExport() {
           var exportUrl = 
             'https://export-to-github.solsort.com/' +
             '?sourceHash=' + sourceHash +
+            '&redirect=' + encodeURIComponent(location.href) +
             '&repos=' + appInfo.github;
         }
       }, 500); 
@@ -629,6 +630,7 @@ function githubExport(sourceHash) {
     var exportUrl = 
       'https://export-to-github.solsort.com/' +
       '?sourceHash=' + sourceHash +
+      '&redirect=' + encodeURIComponent(location.href) +
       '&repos=' + appInfo.github;
 
     ss.renderJsonml(['div',

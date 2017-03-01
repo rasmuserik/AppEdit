@@ -609,6 +609,7 @@ so this is a simple hack of how to make a get request to that url.
               var exportUrl = 
                 'https://export-to-github.solsort.com/' +
                 '?sourceHash=' + sourceHash +
+                '&redirect=' + encodeURIComponent(location.href) +
                 '&repos=' + appInfo.github;
             }
           }, 500); 
@@ -629,6 +630,7 @@ so this is a simple hack of how to make a get request to that url.
         var exportUrl = 
           'https://export-to-github.solsort.com/' +
           '?sourceHash=' + sourceHash +
+          '&redirect=' + encodeURIComponent(location.href) +
           '&repos=' + appInfo.github;
     
         ss.renderJsonml(['div',
