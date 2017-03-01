@@ -66,7 +66,7 @@ TODO: move all state into ss.set/get
 ## About
     
     var aboutElem;
-    da.ready(() => {
+    typeof document !== 'undefined' && ss.ready(() => {
       aboutElem = document.getElementById('about');
       aboutElem.remove();
     });
@@ -262,7 +262,7 @@ TODO: move all state into ss.set/get
     
 ### Help popup / vim mode
     
-    ss.ready(() => {
+    typeof document !== 'undefined' && ss.ready(() => {
     
 Close help on click
     
@@ -412,7 +412,7 @@ Change of `'settings.vim'` enables vim-mode
     
 ### Styling
     
-    ss.ready(() => {
+    typeof document !== 'undefined' && ss.ready(() => {
       var applogBase = {
         transition: 'opacity 0.5s',
         whiteSpace: 'pre-wrap',
@@ -467,7 +467,7 @@ Change of `'settings.vim'` enables vim-mode
 ### Styling
     
     
-    ss.ready(() => {
+    typeof document !== 'undefined' && ss.ready(() => {
       var buttonStyle = {
         display: 'inline-block',
         height: 36,
@@ -702,7 +702,7 @@ so this is a simple hack of how to make a get request to that url.
     }
 ## Navigation bar
     
-    ss.ready(() => {
+    typeof document !== 'undefined' && ss.ready(() => {
       ss.loadStyle('nav-bar-css', {
         '#topbar': {
           position: 'fixed',
@@ -752,7 +752,7 @@ so this is a simple hack of how to make a get request to that url.
     
     ss.setJS(['route', 'page'], 'about');
     
-    ss.ready(() => {
+    typeof document !== 'undefined' && ss.ready(() => {
       loadSourceCode();
     
       ss.setJS('settings', JSON.parse(localStorage.getItem('appeditSettings')));

@@ -8,7 +8,7 @@ while inotifywait -e modify,close_write,move_self -q *.js
 do 
   kill `cat .pid`
   sleep 0.1
-  node appedit.js test $@ &
+  node --trace-warnings appedit.js test $@ &
   echo $! > .pid
   cat appedit.js | sed -e 's/^/    /' | sed -e 's/^ *[/][/] \?//' > README.md
   ./node_modules/.bin/eslint appedit.js &
