@@ -348,6 +348,22 @@ Change of `'settings.vim'` enables vim-mode
         .then(() => rerunApp && appProcess());
     }
     
+    
+### appPinger
+
+    function appPinger() {
+      if(!child) {
+        return;
+      }
+      ss.call(child, 'da:status')
+        .catch(() => {
+          error('status error from child, killing it.');
+          ss.kill(child);
+          child = undefined;
+        });
+    }
+    setInterval(appPinger, 5000);
+    
 ## Message overlay
 
 ### `log` / `warn` / `error`
@@ -603,7 +619,7 @@ so this is a simple hack of how to make a get request to that url.
           setTimeout(() => {
     
             var appInfo = ss.get('app.info', {});
-            if(!appInfo.github) {
+            if(!appInfo || !appInfo.github) {
               alert('You need to set exports.info.github in order to export to github.\n' +
                   'Example: \nexports.info = {\n  github: \'username/repository\'\n};');
             } else {

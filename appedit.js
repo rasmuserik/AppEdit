@@ -348,6 +348,22 @@ function appProcess() {
     .then(() => rerunApp && appProcess());
 }
 
+
+// ### appPinger
+//
+function appPinger() {
+  if(!child) {
+    return;
+  }
+  ss.call(child, 'da:status')
+    .catch(() => {
+      error('status error from child, killing it.');
+      ss.kill(child);
+      child = undefined;
+    });
+}
+setInterval(appPinger, 5000);
+
 // ## Message overlay
 //
 // ### `log` / `warn` / `error`
@@ -601,9 +617,8 @@ function doGithubExport() {
       /* TODO: would be more elegant to wait for app to initialise 
        * TODO: refactor*/
       setTimeout(() => {
-
-        var appInfo = ss.get('app.info', {});
-        if(!appInfo.github) {
+        var appInfo = ss.get('app.info');
+        if(!appInfo || !appInfo.github) {
           alert('You need to set exports.info.github in order to export to github.\n' +
               'Example: \nexports.info = {\n  github: \'username/repository\'\n};');
         } else {
@@ -620,8 +635,8 @@ function doGithubExport() {
 
 function githubExport(sourceHash) {
   var elem = ss.bodyElem('appedit-github-export');
-  var appInfo = ss.get('app.info', {});
-  if(!appInfo.github) {
+  var appInfo = ss.get('app.info');
+  if(!appInfo || !appInfo.github) {
     ss.renderJsonml(['div', 'You need to set ', 
         ['code', 'exports.info.github'],
         ' in order to export to github. Example:',
