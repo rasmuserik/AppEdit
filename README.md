@@ -590,6 +590,7 @@ so this is a simple hack of how to make a get request to that url.
       ss.bodyElem('appedit-main-app').appendChild(shareElem);
       shareButtons();
       generateThumbnail();
+      localStorage.setItem('appeditContent', ss.getJS('code'));
     }
     
 ### doGithubExport() 

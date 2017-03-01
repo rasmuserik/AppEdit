@@ -590,6 +590,7 @@ function share() {
   ss.bodyElem('appedit-main-app').appendChild(shareElem);
   shareButtons();
   generateThumbnail();
+  localStorage.setItem('appeditContent', ss.getJS('code'));
 }
 
 // ### doGithubExport() 
