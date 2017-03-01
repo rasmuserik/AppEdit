@@ -356,7 +356,6 @@ function appPinger() {
     return;
   }
   ss.call(child, 'da:status')
-    .then(s => console.log('child status', s))
     .catch(() => {
       error('status error from child, killing it.');
       ss.kill(child);
