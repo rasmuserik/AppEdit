@@ -348,6 +348,23 @@ Change of `'settings.vim'` enables vim-mode
         .then(() => rerunApp && appProcess());
     }
     
+    
+### appPinger
+
+    function appPinger() {
+      if(!child) {
+        return;
+      }
+      ss.call(child, 'da:status')
+        .then(s => console.log('child status', s))
+        .catch(() => {
+          error('status error from child, killing it.');
+          ss.kill(child);
+          child = undefined;
+        });
+    }
+    setInterval(appPinger, 5000);
+    
 ## Message overlay
 
 ### `log` / `warn` / `error`
