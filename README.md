@@ -20,7 +20,8 @@ You can try it live at https://appedit.solsort.com/.
     exports.info = {
       title: 'AppEdit',
       version: '0.2.0',
-      customIndexHtml: true
+      customIndexHtml: true,
+      github: 'solsort/appedit'
     };
     
     var ss = require('solsort', {version: '0.2'});
