@@ -329,6 +329,7 @@ function appProcess() {
               /*console.log.apply(console, ss.slice(arguments));*/
               ss.emit(ss.nid, 'log:error', ss.jsonify(err) || msg);
             }
+            ss.call('${ss.pid}', 'fri:subscribe', ss.pid, 'fri:set', 'ui.bounds');
             `)
           .then(() => ss.call(child, 'fri:subscribe', ss.pid, 'fri:set', ['ui', 'html']))
           .then(() => runningApp = false)
