@@ -82,7 +82,7 @@ function about() {
 
   ss.renderJsonml(['div',
       ['h3', 'Demos / tutorials'],
-      ['div'].concat(['tutorial'].map(example('edit'))),
+      ['div'].concat(['tutorial', '7drl-2017'].map(example('edit'))),
       ['h3', 'Function libraries'],
       ['div'].concat(['solsort', 'fri', 'direape', 'reun'].map(example('read'))),
       ['h3', 'Major Applications'],
@@ -357,14 +357,14 @@ function appPinger() {
   if(!child) {
     return;
   }
-  ss.call(child, 'da:status')
+  ss.call(child, 'fri:set', 'solsort.time', Date.now() / 1000 | 0)
     .catch(() => {
       error('status error from child, killing it.');
       ss.kill(child);
       child = undefined;
     });
 }
-setInterval(appPinger, 5000);
+setInterval(appPinger, 1000);
 
 // ## Message overlay
 //

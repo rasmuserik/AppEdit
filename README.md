@@ -357,14 +357,14 @@ Change of `'settings.vim'` enables vim-mode
       if(!child) {
         return;
       }
-      ss.call(child, 'da:status')
+      ss.call(child, 'fri:set', 'solsort.time', Date.now() / 1000 | 0)
         .catch(() => {
           error('status error from child, killing it.');
           ss.kill(child);
           child = undefined;
         });
     }
-    setInterval(appPinger, 5000);
+    setInterval(appPinger, 1000);
     
 ## Message overlay
 
