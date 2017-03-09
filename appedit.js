@@ -82,10 +82,11 @@ function about() {
 
   ss.renderJsonml(['div',
       ['h3', 'Demos / tutorials'],
-      ['div'].concat(['tutorial', '7drl-2017'].map(example('edit'))),
+      ['div'].concat(['tutorial'].map(example('edit'))),
       ['h3', 'Function libraries'],
       ['div'].concat(['solsort', 'fri', 'direape', 'reun'].map(example('read'))),
-      ['h3', 'Major Applications'],
+      ['h3', 'Applications'],
+      example('edit')('7drl-2017'),
       example('read')('appedit'),
   ], document.getElementById('appedit-examples'));
 
