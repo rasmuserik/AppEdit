@@ -24,8 +24,8 @@ exports.info = {
   github: 'solsort/appedit'
 };
 
-var ss = require('solsort', {version: '0.2'});
-var da = require('direape');
+var ss = require('solsort@0.2');
+var da = require('direape@0.2');
 da.testSuite('appedit');
 da.ready(() => da.runTests('appedit'));
 
